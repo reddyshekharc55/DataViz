@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import './App.css';
 import RegionList from './RegionList';
+import CountryExplorer from './components/CountryExplorer'
+
 
 
 function App() {
@@ -15,6 +17,11 @@ function App() {
       description: 'Explore happiness distribution across World Bank regions.'
     },
     // Add other epics here
+    {
+      key: 'country-explorer',
+      title: 'Country Explorer',
+      description: 'Explore trends for a specific country over time.'
+    }
   ];
 
   // Responsive container style
@@ -100,6 +107,35 @@ function App() {
                 <strong>Selected Region:</strong> {selectedRegion}
               </div>
             )}
+            {/* New button to open Country Explorer */}
+            <button
+              style={{ marginTop: '2rem', background: '#0097a7', color: '#fff', border: 'none', borderRadius: 8, padding: '0.8rem 1.2rem', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001' }}
+              onClick={() => setPage('country-explorer')}
+            >
+              Open Country Explorer
+            </button>
+          </div>
+        </main>
+      )}
+
+      {page === 'country-explorer' && (
+        <main style={{
+          flex: 1,
+          width: '100%',
+          maxWidth: 700,
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+        }}>
+          <button
+            style={{ marginBottom: '1.2rem', background: 'none', border: 'none', color: '#0097a7', fontWeight: 600, cursor: 'pointer', fontSize: '1rem' }}
+            onClick={() => setPage('home')}
+          >
+            ← Back to Epics
+          </button>
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px #0001', padding: '2rem 1.5rem', width: '100%', boxSizing: 'border-box' }}>
+            <CountryExplorer />
           </div>
         </main>
       )}
