@@ -34,7 +34,7 @@ function App() {
   return (
     <div style={containerStyle}>
       <header style={{ textAlign: 'center', padding: '2rem 0 1rem 0', width: '100%', flexShrink: 0 }}>
-        <h1 style={{ margin: 0, fontSize: '2.2rem', color: '#005662', letterSpacing: 1 }}>HappyData Platform</h1>
+        <h1 style={{ margin: 0, fontSize: '2.2rem', color: '#005662', letterSpacing: 1 }}>DataViz Platform</h1>
         <p style={{ color: '#222', marginTop: '0.5rem', fontSize: '1.1rem' }}>
           Explore global happiness and development indicators.
         </p>
