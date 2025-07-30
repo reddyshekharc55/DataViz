@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getWorldBankData, getCountries, INDICATORS } from '../services/apiService'
+import { getCountries, INDICATORS } from '../services/apiService'
 
 
 const CountryExplorer = () => {
@@ -11,13 +11,6 @@ const CountryExplorer = () => {
     const [endYear, setEndYear] = useState('2023')
     const [loading, setLoading] = useState(false)
 
-    // const indicators = [
-    //     { value: 'NY.GDP.PCAP.CD', label: 'GDP per Capita' },
-    //     { value: 'SP.DYN.LE00.IN', label: 'Life Expectancy' },
-    //     { value: 'SE.PRM.NENR', label: 'Education Index' },
-    //     { value: 'SL.UEM.TOTL.ZS', label: 'Unemployment Rate' },
-    //     { value: 'EN.ATM.CO2E.PC', label: 'CO2 Emissions per Capita' }
-    // ]
     // Load countries on component mount
     useEffect(() => {
         const loadCountries = async () => {
@@ -26,19 +19,6 @@ const CountryExplorer = () => {
                 setCountries(countriesData)
             } catch (err) {
                 console.error('Error loading countries:', err)
-                // Set fallback countries
-                setCountries([
-                    { code: 'USA', name: 'United States' },
-                    { code: 'CAN', name: 'Canada' },
-                    { code: 'GBR', name: 'United Kingdom' },
-                    { code: 'DEU', name: 'Germany' },
-                    { code: 'FRA', name: 'France' },
-                    { code: 'JPN', name: 'Japan' },
-                    { code: 'IND', name: 'India' },
-                    { code: 'CHN', name: 'China' },
-                    { code: 'BRA', name: 'Brazil' },
-                    { code: 'AUS', name: 'Australia' }
-                ])
             }
         }
         loadCountries()
