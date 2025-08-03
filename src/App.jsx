@@ -1,162 +1,96 @@
 import { useState } from 'react';
 import './App.css';
 import RegionList from './RegionList';
-import CountryExplorer from './components/CountryExplorer'
+import CountryExplorer from './components/CountryExplorer';
+import Dashboard from './components/Dashboard';
+import BitsLogo from './components/BitsLogo';
 
 
 
 function App() {
-  const [page, setPage] = useState('home');
+  const [page, setPage] = useState('dashboard');
   const [selectedRegion, setSelectedRegion] = useState(null);
 
-  // List of epics (add more as needed)
-  const epics = [
-    {
-      key: 'regional-happiness',
-      title: 'Regional Happiness Distribution',
-      description: 'Explore happiness distribution across World Bank regions.'
-    },
-    // Add other epics here
-    {
-      key: 'country-explorer',
-      title: 'Country Explorer',
-      description: 'Explore trends for a specific country over time.'
-    }
-  ];
+  let mainContent;
+  switch (page) {
+    case 'dashboard':
+      mainContent = <Dashboard />;
+      break;
+    case 'country-explorer':
+      mainContent = <CountryExplorer />;
+      break;
+    default:
+      mainContent = null;
+  }
 
-  // Responsive container style
-  const containerStyle = {
-    minHeight: '100vh',
-    minWidth: '100vw',
-    background: '#e6f2f8',
-    padding: 0,
-    margin: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'stretch',
-    justifyContent: 'stretch',
-    boxSizing: 'border-box',
-  };
 
   return (
-    <div style={containerStyle}>
-      <header style={{ textAlign: 'center', padding: '2rem 0 1rem 0', width: '100%', flexShrink: 0 }}>
-        <h1 style={{ margin: 0, fontSize: '2.2rem', color: '#005662', letterSpacing: 1 }}>DataViz Platform</h1>
-        <p style={{ color: '#222', marginTop: '0.5rem', fontSize: '1.1rem' }}>
-          Explore global happiness and development indicators.
-        </p>
-      </header>
-      {page === 'home' && (
-        <main style={{
-          flex: 1,
-          width: '100%',
-          maxWidth: 700,
-          margin: '0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}>
-          <h2 style={{ color: '#005662', fontSize: '1.3rem', marginBottom: '1.2rem', textAlign: 'center' }}>Epics</h2>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {epics.map(epic => (
-              <li key={epic.key} style={{ marginBottom: '1.2rem' }}>
-                <button
-                  style={{
-                    width: '100%',
-                    background: '#fff',
-                    border: '1.5px solid #0097a7',
-                    borderRadius: 8,
-                    padding: '1rem',
-                    fontSize: '1.08rem',
-                    color: '#005662',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px #0001',
-                    transition: 'background 0.2s',
-                  }}
-                  onClick={() => setPage(epic.key)}
-                >
-                  {epic.title}
-                  <div style={{ fontWeight: 400, fontSize: '0.98rem', color: '#333', marginTop: 4 }}>{epic.description}</div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </main>
-      )}
-      {page === 'regional-happiness' && (
-        <main style={{
-          flex: 1,
-          width: '100%',
-          maxWidth: 700,
-          margin: '0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}>
+    <div style={{ height: '100%', width: '100vw', maxWidth: '100vw', minWidth: 0, background: '#e6f2f8', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflowX: 'hidden' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100vw', maxWidth: '100vw', padding: '0.7rem 0.3rem 0.7rem 0.3rem', gap: '0.5rem', boxSizing: 'border-box', flexWrap: 'wrap', minWidth: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 60, maxWidth: 100, flexShrink: 1 }}>
+          <BitsLogo />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '0.5rem', minWidth: 0, maxWidth: '100vw', flexWrap: 'wrap', boxSizing: 'border-box' }}>
           <button
-            style={{ marginBottom: '1.2rem', background: 'none', border: 'none', color: '#0097a7', fontWeight: 600, cursor: 'pointer', fontSize: '1rem' }}
-            onClick={() => setPage('home')}
+            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
+            onClick={() => setPage('dashboard')}
           >
-            ← Back to Epics
+            Overview
           </button>
-          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px #0001', padding: '2rem 1.5rem', width: '100%', boxSizing: 'border-box' }}>
-            <RegionList onRegionSelect={setSelectedRegion} />
-            {selectedRegion && (
-              <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '1.1rem', color: '#005662' }}>
-                <strong>Selected Region:</strong> {selectedRegion}
-              </div>
-            )}
-            {/* New button to open Country Explorer */}
-            <button
-              style={{ marginTop: '2rem', background: '#0097a7', color: '#fff', border: 'none', borderRadius: 8, padding: '0.8rem 1.2rem', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001' }}
-              onClick={() => setPage('country-explorer')}
-            >
-              Open Country Explorer
-            </button>
-          </div>
-        </main>
-      )}
-
-      {page === 'country-explorer' && (
-        <main style={{
-          flex: 1,
-          width: '100%',
-          maxWidth: 700,
-          margin: '0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}>
           <button
-            style={{ marginBottom: '1.2rem', background: 'none', border: 'none', color: '#0097a7', fontWeight: 600, cursor: 'pointer', fontSize: '1rem' }}
-            onClick={() => setPage('home')}
+            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
+            onClick={() => setPage('country-explorer')}
           >
-            ← Back to Epics
+            Country Explorer
           </button>
-          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px #0001', padding: '2rem 1.5rem', width: '100%', boxSizing: 'border-box' }}>
-            <CountryExplorer />
+          <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>Happiness</button>
+          <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>Regional View</button>
+          <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>Regional Comparison</button>
+          <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>India Dashboard</button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 120, maxWidth: 180, flexShrink: 1 }}>
+          <div style={{ color: '#005662', fontWeight: 700, fontSize: '1.05rem', letterSpacing: 0.5, textAlign: 'right', whiteSpace: 'nowrap' }}>
+            <span role="img" aria-label="globe">🌍</span> DataBoard
           </div>
-        </main>
-      )}
-      {/* Responsive styles */}
+          <div style={{ color: '#007c91', fontSize: '0.92rem', marginTop: '0.3rem', fontWeight: 500, maxWidth: 140, textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Global Happiness & Development Indicators Dashboard
+          </div>
+        </div>
+      </div>
+      <div style={{ flex: 1, minWidth: 0, boxSizing: 'border-box', overflow: 'auto', width: '100vw', maxWidth: '100vw' }}>
+        {mainContent}
+      </div>
       <style>{`
         html, body, #root {
           height: 100%;
-          width: 100%;
+          min-height: 100%;
           margin: 0;
           padding: 0;
+          box-sizing: border-box;
+          overflow-x: hidden !important;
+          width: 100vw;
+          max-width: 100vw;
+        }
+        #root > div {
+          height: 100%;
+          width: 100vw;
+          max-width: 100vw;
         }
         @media (max-width: 900px) {
-          main, .region-list-card {
-            max-width: 98vw !important;
+          div[style*='flex-direction: row'][style*='align-items: center'] {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
           }
-        }
-        @media (max-width: 600px) {
-          h1 { font-size: 1.3rem !important; }
-          h2 { font-size: 1.05rem !important; }
-          main > div, .region-list-card {
-            padding: 1rem 0.5rem !important;
+          div[style*='min-width: 60px'] button {
+            min-width: 40px !important;
+            font-size: 0.8rem !important;
+            padding: 0.3rem 0.3rem !important;
+          }
+          div[style*='min-width: 120px'][style*='align-items: flex-end'] {
+            align-items: center !important;
+            text-align: center !important;
           }
         }
       `}</style>
@@ -164,4 +98,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
