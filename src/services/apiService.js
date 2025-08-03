@@ -19,13 +19,50 @@ const worldBankAPI = axios.create({
         { value: 'SP.DYN.LE00.IN', label: 'Life Expectancy' },
         { value: 'SE.PRM.NENR', label: 'Education Index' },
         { value: 'SL.UEM.TOTL.ZS', label: 'Unemployment Rate' },
-        { value: 'EN.ATM.CO2E.PC', label: 'CO2 Emissions per Capita' }
+        // { value: 'EN.ATM.CO2E.PC', label: 'CO2 Emissions per Capita' }
+        { value: 'EN.GHG.ALL.LU.MT.CE.AR5', label: 'Total greenhouse gas emissions' },
+        { value: 'SE.PRM.ENRR', label: 'School enrollment, primary' },
+        // { value: 'SE.ADT.LITR.ZS', label: 'Literacy rate, adult total' },
     ]
 
 // API Service Functions
 
 
 // Get happiness data - Try real API first, fallback to mock data
+// API Service Functions
+
+// Get World Bank indicator data for a country
+export const getWorldBankData = async (countryCode, indicator, startYear = 2010, endYear = 2023) => {
+  try {
+    const response = await worldBankAPI.get(
+      `/country/${countryCode}/indicator/${indicator}`,
+      {
+        params: {
+          date: `${startYear}:${endYear}`
+        }
+      }
+    )
+    
+    if (response.data && response.data[1]) {
+      return response.data[1]
+        .filter(item => item.value !== null)
+        .map(item => ({
+          year: parseInt(item.date),
+          value: item.value,
+          country: item.country.value,
+          indicator: item.indicator.value
+        }))
+        .sort((a, b) => a.year - b.year)
+    }
+    return []
+  } catch (error) {
+    console.error('Error fetching World Bank data:', error)
+    return []
+  }
+}
+
+
+
 export const getHappinessData = async (countryCode, year = 2023) => {
   try {
     // Try real World Happiness Report API first

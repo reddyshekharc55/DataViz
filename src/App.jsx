@@ -48,11 +48,22 @@ function App() {
           <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>Regional Comparison</button>
           <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>India Dashboard</button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 120, maxWidth: 180, flexShrink: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 120, maxWidth: 320, flexShrink: 1, marginRight: '2vw' }}>
           <div style={{ color: '#005662', fontWeight: 700, fontSize: '1.05rem', letterSpacing: 0.5, textAlign: 'right', whiteSpace: 'nowrap' }}>
             <span role="img" aria-label="globe">🌍</span> DataBoard
           </div>
-          <div style={{ color: '#007c91', fontSize: '0.92rem', marginTop: '0.3rem', fontWeight: 500, maxWidth: 140, textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{
+            color: '#007c91',
+            fontSize: '0.92rem',
+            marginTop: '0.3rem',
+            fontWeight: 500,
+            maxWidth: 300,
+            textAlign: 'right',
+            whiteSpace: 'normal',
+            overflowWrap: 'break-word',
+            wordBreak: 'break-word',
+            lineHeight: 1.25
+          }}>
             Global Happiness & Development Indicators Dashboard
           </div>
         </div>
