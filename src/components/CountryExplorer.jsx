@@ -90,12 +90,13 @@ const CountryExplorer = () => {
 
   return (
     <div className="card" style={{
-      minHeight: '100vh',
+      height: '100%',
+      maxHeight: '100%',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-start',
       boxSizing: 'border-box',
-      paddingBottom: '2rem'
+      overflow: 'hidden'
     }}>
       <style>{`
         .form-group {
@@ -195,16 +196,16 @@ const CountryExplorer = () => {
         </div>
       )}
 
-      <div className="chart-container">
+      <div className="chart-container" style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <h3>Trend Analysis</h3>
         {loading ? (
           <div className="loading">Loading chart data...</div>
         ) : chartData ? (
-          <div style={{ height: '400px' }}>
+          <div style={{ height: '100%', flex: 1, minHeight: 0 }}>
             <Line {...chartData} />
           </div>
         ) : (
-          <p style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+          <p style={{ textAlign: 'center', padding: '2rem', color: '#666', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             📊 Select options to visualize data for the selected country and indicator
           </p>
         )}

@@ -4,12 +4,18 @@ import RegionList from './RegionList';
 import CountryExplorer from './components/CountryExplorer';
 import Dashboard from './components/Dashboard';
 import BitsLogo from './components/BitsLogo';
+import HappinessComparison from './components/HappinessComparison';
 
 
 
 function App() {
   const [page, setPage] = useState('dashboard');
   const [selectedRegion, setSelectedRegion] = useState(null);
+
+  const handleRegionSelect = (region) => {
+    setSelectedRegion(region);
+    console.log('Selected region:', region);
+  };
 
   let mainContent;
   switch (page) {
@@ -18,6 +24,12 @@ function App() {
       break;
     case 'country-explorer':
       mainContent = <CountryExplorer />;
+      break;
+    case 'regional-view':
+      mainContent = <RegionList onRegionSelect={handleRegionSelect} />;
+      break;
+    case 'happiness':
+      mainContent = <HappinessComparison />;
       break;
     default:
       mainContent = null;
@@ -32,19 +44,29 @@ function App() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '0.5rem', minWidth: 0, maxWidth: '100vw', flexWrap: 'wrap', boxSizing: 'border-box' }}>
           <button
-            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
+            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: page === 'dashboard' ? '#0097a7' : '#fff', color: page === 'dashboard' ? '#fff' : '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
             onClick={() => setPage('dashboard')}
           >
             Overview
           </button>
           <button
-            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
+            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: page === 'country-explorer' ? '#0097a7' : '#fff', color: page === 'country-explorer' ? '#fff' : '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
             onClick={() => setPage('country-explorer')}
           >
             Country Explorer
           </button>
-          <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>Happiness</button>
-          <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>Regional View</button>
+          <button 
+            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: page === 'happiness' ? '#0097a7' : '#fff', color: page === 'happiness' ? '#fff' : '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
+            onClick={() => setPage('happiness')}
+          >
+            Happiness
+          </button>
+          <button 
+            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: page === 'regional-view' ? '#0097a7' : '#fff', color: page === 'regional-view' ? '#fff' : '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
+            onClick={() => setPage('regional-view')}
+          >
+            Regional View
+          </button>
           <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>Regional Comparison</button>
           <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>India Dashboard</button>
         </div>
@@ -68,7 +90,7 @@ function App() {
           </div>
         </div>
       </div>
-      <div style={{ flex: 1, minWidth: 0, boxSizing: 'border-box', overflow: 'auto', width: '100vw', maxWidth: '100vw' }}>
+      <div style={{ flex: 1, minWidth: 0, boxSizing: 'border-box', overflow: 'hidden', width: '100vw', maxWidth: '100vw', display: 'flex', flexDirection: 'column' }}>
         {mainContent}
       </div>
       <style>{`
