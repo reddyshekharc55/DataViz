@@ -11,8 +11,8 @@ const Dashboard = () => {
       boxSizing: 'border-box',
       overflow: 'hidden'
     }}>
-      <h2 style={{ margin: 0, marginBottom: '0.5rem' }}>📊 Dashboard Overview</h2>
-      <p style={{ margin: 0, color: '#666' }}>Welcome to the Global Happiness & Development Indicators Dashboard! Here you can find various data visualizations and insights.</p>
+      <h2 style={{ margin: 0, marginBottom: '0.5rem', color: '#2d3748' }}>📊 Dashboard Overview</h2>
+      <p style={{ margin: 0, color: '#4a5568' }}>Welcome to the Global Happiness & Development Indicators Dashboard! Here you can find various data visualizations and insights.</p>
       
       <div style={{ 
         flex: 1, 

@@ -282,8 +282,8 @@ const HappinessComparison = () => {
         }
       `}</style>
       
-      <h2 style={{ margin: 0, marginBottom: '0.3rem', fontSize: '1.5rem' }}>📈 GDP vs Happiness Comparison</h2>
-      <p style={{ margin: 0, marginBottom: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
+      <h2 style={{ margin: 0, marginBottom: '0.3rem', fontSize: '1.5rem', color: '#2d3748' }}>📈 GDP vs Happiness Comparison</h2>
+      <p style={{ margin: 0, marginBottom: '0.5rem', color: '#4a5568', fontSize: '0.9rem' }}>
         Compare GDP per capita (World Bank API) and happiness scores (World Happiness Report data) over time
       </p>
       <div style={{

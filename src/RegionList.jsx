@@ -78,8 +78,8 @@ export default function RegionList({ onRegionSelect }) {
       boxSizing: 'border-box',
       padding: '1.5rem',
       overflow: 'hidden',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      color: 'white'
+      background: '#ffffff',
+      color: '#333'
     }}>
       <div style={{
         textAlign: 'center',
@@ -90,14 +90,14 @@ export default function RegionList({ onRegionSelect }) {
           marginBottom: '0.5rem', 
           fontSize: '2rem',
           fontWeight: 700,
-          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          color: '#2d3748'
         }}>
           🌍 World Bank Regions
         </h2>
         <p style={{ 
           margin: '0 auto', 
           fontSize: '1rem',
-          opacity: 0.9,
+          color: '#4a5568',
           maxWidth: '600px'
         }}>
           Explore global regions and discover countries within each geographic area
@@ -122,33 +122,34 @@ export default function RegionList({ onRegionSelect }) {
               padding: "1.5rem",
               borderRadius: 16,
               background: selected === region.name 
-                ? `linear-gradient(135deg, ${region.color}, ${region.lightColor})` 
-                : "rgba(255, 255, 255, 0.95)",
-              color: selected === region.name ? 'white' : '#333',
-              border: selected === region.name ? `3px solid ${region.color}` : "2px solid rgba(255,255,255,0.3)",
+                ? region.lightColor 
+                : "#ffffff",
+              color: selected === region.name ? region.color : '#333',
+              border: selected === region.name ? `3px solid ${region.color}` : "2px solid #e2e8f0",
               fontWeight: selected === region.name ? 600 : 400,
               transition: "all 0.4s ease",
               boxShadow: selected === region.name 
-                ? `0 8px 25px rgba(0,0,0,0.2), 0 0 0 4px ${region.lightColor}` 
-                : "0 4px 15px rgba(0,0,0,0.1)",
+                ? `0 8px 25px rgba(0,0,0,0.1), 0 0 0 4px ${region.lightColor}` 
+                : "0 4px 15px rgba(0,0,0,0.08)",
               transform: selected === region.name ? "translateY(-5px) scale(1.02)" : "translateY(0) scale(1)",
-              backdropFilter: "blur(10px)",
               height: 'fit-content',
               position: 'relative',
               overflow: 'hidden'
             }}
             onMouseEnter={(e) => {
               if (selected !== region.name) {
-                e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.15)";
+                e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.12)";
                 e.currentTarget.style.transform = "translateY(-3px) scale(1.01)";
-                e.currentTarget.style.background = "rgba(255, 255, 255, 1)";
+                e.currentTarget.style.background = "#f8fafc";
+                e.currentTarget.style.borderColor = region.color;
               }
             }}
             onMouseLeave={(e) => {
               if (selected !== region.name) {
-                e.currentTarget.style.boxShadow = "0 4px 15px rgba(0,0,0,0.1)";
+                e.currentTarget.style.boxShadow = "0 4px 15px rgba(0,0,0,0.08)";
                 e.currentTarget.style.transform = "translateY(0) scale(1)";
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.95)";
+                e.currentTarget.style.background = "#ffffff";
+                e.currentTarget.style.borderColor = "#e2e8f0";
               }
             }}
           >
@@ -164,7 +165,7 @@ export default function RegionList({ onRegionSelect }) {
               margin: '0 0 0.5rem 0', 
               fontSize: '1.2rem',
               textAlign: 'center',
-              color: selected === region.name ? 'white' : region.color,
+              color: region.color,
               fontWeight: 700
             }}>
               {region.name}
@@ -173,7 +174,7 @@ export default function RegionList({ onRegionSelect }) {
             <p style={{ 
               margin: '0 0 1rem 0', 
               fontSize: '0.9rem', 
-              color: selected === region.name ? 'rgba(255,255,255,0.9)' : '#666',
+              color: '#4a5568',
               lineHeight: 1.4,
               textAlign: 'center'
             }}>
@@ -187,7 +188,7 @@ export default function RegionList({ onRegionSelect }) {
               gap: '0.5rem',
               padding: '0.5rem',
               backgroundColor: selected === region.name 
-                ? 'rgba(255,255,255,0.2)' 
+                ? region.color
                 : region.lightColor,
               borderRadius: 8,
               fontSize: '0.85rem',
@@ -203,7 +204,7 @@ export default function RegionList({ onRegionSelect }) {
                 position: 'absolute',
                 top: '1rem',
                 right: '1rem',
-                backgroundColor: 'rgba(255,255,255,0.3)',
+                backgroundColor: region.color,
                 borderRadius: '50%',
                 width: '30px',
                 height: '30px',
@@ -211,6 +212,8 @@ export default function RegionList({ onRegionSelect }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '1rem',
+                color: 'white',
+                fontWeight: 'bold',
                 animation: 'pulse 2s infinite'
               }}>
                 ✓
@@ -224,11 +227,10 @@ export default function RegionList({ onRegionSelect }) {
         <div style={{
           marginTop: '2rem',
           padding: '1.5rem',
-          backgroundColor: 'rgba(255,255,255,0.15)',
+          backgroundColor: '#f8fafc',
           borderRadius: 12,
-          border: '2px solid rgba(255,255,255,0.3)',
+          border: `2px solid ${WORLD_BANK_REGIONS.find(r => r.name === selected)?.color || '#0097a7'}`,
           flexShrink: 0,
-          backdropFilter: 'blur(10px)',
           textAlign: 'center'
         }}>
           <div style={{
@@ -239,7 +241,7 @@ export default function RegionList({ onRegionSelect }) {
           </div>
           <h4 style={{ 
             margin: '0 0 0.5rem 0', 
-            color: 'white', 
+            color: '#2d3748', 
             fontSize: '1.1rem',
             fontWeight: 600
           }}>
@@ -247,7 +249,7 @@ export default function RegionList({ onRegionSelect }) {
           </h4>
           <p style={{ 
             margin: 0, 
-            color: 'rgba(255,255,255,0.9)', 
+            color: '#4a5568', 
             fontSize: '0.9rem',
             lineHeight: 1.4
           }}>
@@ -256,14 +258,6 @@ export default function RegionList({ onRegionSelect }) {
           </p>
         </div>
       )}
-      
-      <style jsx>{`
-        @keyframes pulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.1); }
-          100% { transform: scale(1); }
-        }
-      `}</style>
     </div>
   );
 }

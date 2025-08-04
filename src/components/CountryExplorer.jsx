@@ -129,8 +129,8 @@ const CountryExplorer = () => {
           color: #888;
         }
       `}</style>
-      <h2>🌍 Country Explorer</h2>
-      <p>Explore indicator trends for a selected country over a chosen time period</p>
+      <h2 style={{ margin: 0, marginBottom: '0.5rem', color: '#2d3748', fontSize: '1.5rem' }}>🌍 Country Explorer</h2>
+      <p style={{ margin: 0, marginBottom: '1.5rem', color: '#4a5568' }}>Explore indicator trends for a selected country over a chosen time period</p>
 
       {/* Responsive horizontal dropdowns */}
       <div style={{
@@ -191,21 +191,21 @@ const CountryExplorer = () => {
       </div>
 
       {error && (
-        <div className="error" style={{ color: 'red', marginBottom: '1rem' }}>
+        <div className="error" style={{ color: '#e53e3e', marginBottom: '1rem', backgroundColor: '#fed7d7', padding: '0.5rem', borderRadius: '4px', border: '1px solid #feb2b2' }}>
           {error}
         </div>
       )}
 
       <div className="chart-container" style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <h3>Trend Analysis</h3>
+        <h3 style={{ margin: '0 0 0.5rem 0', color: '#2d3748' }}>Trend Analysis</h3>
         {loading ? (
-          <div className="loading">Loading chart data...</div>
+          <div className="loading" style={{ color: '#4a5568' }}>Loading chart data...</div>
         ) : chartData ? (
           <div style={{ height: '100%', flex: 1, minHeight: 0 }}>
             <Line {...chartData} />
           </div>
         ) : (
-          <p style={{ textAlign: 'center', padding: '2rem', color: '#666', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ textAlign: 'center', padding: '2rem', color: '#718096', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             📊 Select options to visualize data for the selected country and indicator
           </p>
         )}
