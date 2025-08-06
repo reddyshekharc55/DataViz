@@ -113,3 +113,59 @@ export const createTrendDataset = (label, data, color = CHART_COLORS.primary, bo
   pointRadius: 4,
   pointHoverRadius: 6
 })
+
+// Bar chart configuration
+export const getBarChartConfig = (title, datasets, labels) => ({
+  type: 'bar',
+  data: {
+    labels,
+    datasets
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: {
+        display: true,
+        text: title,
+        font: {
+          size: 16,
+          weight: 'bold'
+        }
+      },
+      legend: {
+        position: 'top',
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+      }
+    },
+    scales: {
+      x: {
+        display: true,
+        title: {
+          display: true,
+          text: 'Countries'
+        }
+      },
+      y: {
+        display: true,
+        title: {
+          display: true,
+          text: 'Score'
+        },
+        beginAtZero: true
+      }
+    }
+  }
+})
+
+// Create bar dataset
+export const createBarDataset = (label, data, backgroundColor = CHART_COLORS.gradient) => ({
+  label,
+  data,
+  backgroundColor,
+  borderColor: backgroundColor.map(color => color.replace('0.8', '1')),
+  borderWidth: 1
+})

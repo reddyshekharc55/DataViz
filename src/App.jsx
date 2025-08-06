@@ -5,7 +5,7 @@ import CountryExplorer from './components/CountryExplorer';
 import Dashboard from './components/Dashboard';
 import BitsLogo from './components/BitsLogo';
 import HappinessComparison from './components/HappinessComparison';
-
+import IndiaDashboard from './components/IndianDashboard';
 
 
 function App() {
@@ -30,6 +30,9 @@ function App() {
       break;
     case 'happiness':
       mainContent = <HappinessComparison />;
+      break;
+    case 'india-dashboard':
+      mainContent = <IndiaDashboard />;
       break;
     default:
       mainContent = null;
@@ -68,7 +71,12 @@ function App() {
             Regional View
           </button>
           <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>Regional Comparison</button>
-          <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>India Dashboard</button>
+          <button 
+            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: page === 'india-dashboard' ? '#0097a7' : '#fff', color: page === 'india-dashboard' ? '#fff' : '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
+            onClick={() => setPage('india-dashboard')}
+          >
+            India Dashboard
+          </button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 120, maxWidth: 320, flexShrink: 1, marginRight: '2vw' }}>
           <div style={{ color: '#005662', fontWeight: 700, fontSize: '1.05rem', letterSpacing: 0.5, textAlign: 'right', whiteSpace: 'nowrap' }}>
