@@ -22,6 +22,9 @@ const worldBankAPI = axios.create({
         { value: 'SP.DYN.LE00.IN', label: 'Life Expectancy' },
         { value: 'SE.PRM.NENR', label: 'Education Index' },
         { value: 'SL.UEM.TOTL.ZS', label: 'Unemployment Rate' },
+        { value: 'SI.POV.DDAY', label: 'Poverty headcount ratio at $2.15 a day (2017 PPP)' },
+        { value: 'SI.POV.LMIC', label: 'Poverty headcount ratio at $3.65 a day (2017 PPP)' },
+        { value: 'SI.POV.UMIC', label: 'Poverty headcount ratio at $6.85 a day (2017 PPP)' },
         // { value: 'EN.ATM.CO2E.PC', label: 'CO2 Emissions per Capita' }
         { value: 'EN.GHG.ALL.LU.MT.CE.AR5', label: 'Total greenhouse gas emissions' },
         { value: 'SE.PRM.ENRR', label: 'School enrollment, primary' },
@@ -510,4 +513,60 @@ const generateMockHappinessTimeSeries = (countryCode, startYear, endYear) => {
   }
   
   return timeSeries
+}
+
+// Get multi-country data for correlation analysis
+export const getMultiCountryCorrelationData = async (countryCodes, indicators, year = 2022) => {
+  try {
+    const results = []
+    
+    for (const countryCode of countryCodes) {
+      const countryData = { countryCode, year }
+      
+      // Get happiness data
+      const happinessData = getRealHappinessData(countryCode)
+      if (happinessData) {
+        countryData.happiness = happinessData.score
+      }
+      
+      // Get World Bank indicator data
+      for (const indicator of indicators) {
+        try {
+          const data = await getWorldBankData(countryCode, indicator, year, year)
+          if (data && data.length > 0 && data[0].value !== null) {
+            countryData[indicator] = data[0].value
+          }
+        } catch (error) {
+          console.warn(`Failed to get ${indicator} for ${countryCode}:`, error.message)
+        }
+      }
+      
+      // Only include countries with happiness data and at least one indicator
+      if (countryData.happiness && Object.keys(countryData).length > 3) {
+        results.push(countryData)
+      }
+    }
+    
+    return results
+  } catch (error) {
+    console.error('Error fetching multi-country correlation data:', error)
+    return []
+  }
+}
+
+// Calculate correlation coefficient between two arrays
+export const calculateCorrelation = (x, y) => {
+  if (x.length !== y.length || x.length === 0) return 0
+  
+  const n = x.length
+  const sumX = x.reduce((a, b) => a + b, 0)
+  const sumY = y.reduce((a, b) => a + b, 0)
+  const sumXY = x.reduce((acc, xi, i) => acc + xi * y[i], 0)
+  const sumX2 = x.reduce((acc, xi) => acc + xi * xi, 0)
+  const sumY2 = y.reduce((acc, yi) => acc + yi * yi, 0)
+  
+  const numerator = n * sumXY - sumX * sumY
+  const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY))
+  
+  return denominator === 0 ? 0 : numerator / denominator
 }
