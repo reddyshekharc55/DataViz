@@ -37,7 +37,14 @@ const HappinessComparison = () => {
   const [correlation, setCorrelation] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [countrySearchTerm, setCountrySearchTerm] = useState('')
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const chartRef = useRef(null)
+
+  // Filter countries based on search term
+  const filteredCountries = countries.filter(country =>
+    country.name.toLowerCase().includes(countrySearchTerm.toLowerCase())
+  )
 
   // Generate minimal dummy data when API data is not available
   const generateDummyIndicatorData = (startYear, endYear, indicatorType) => {
@@ -667,41 +674,143 @@ const HappinessComparison = () => {
           <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#4a5568', marginBottom: '0.5rem', display: 'block' }}>
             Select Countries for Analysis ({selectedCountries.length} selected):
           </label>
-          <div style={{ 
-            display: 'flex', 
-            flexWrap: 'wrap', 
-            gap: '0.5rem',
-            maxHeight: '120px',
-            overflowY: 'auto',
-            padding: '0.5rem',
-            border: '1px solid #e2e8f0',
-            borderRadius: 4,
-            backgroundColor: '#f7fafc'
-          }}>
-            {countries.map(country => (
-              <button
-                key={country.code}
-                onClick={() => {
-                  setSelectedCountries(prev => 
-                    prev.includes(country.code)
-                      ? prev.filter(c => c !== country.code)
-                      : [...prev, country.code]
-                  );
-                }}
+          <div style={{ position: 'relative', width: '100%' }}>
+            {/* Search Input */}
+            <input
+              type="text"
+              placeholder="Search countries..."
+              value={countrySearchTerm}
+              onChange={(e) => setCountrySearchTerm(e.target.value)}
+              onFocus={() => setShowCountryDropdown(true)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: showCountryDropdown ? '1px solid #3182ce' : '1px solid #e2e8f0',
+                borderRadius: '4px',
+                fontSize: '0.9rem',
+                backgroundColor: '#ffffff',
+                color: '#2d3748',
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: 'border-color 0.2s ease'
+              }}
+            />
+            
+            {/* Dropdown with checkboxes */}
+            {showCountryDropdown && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                backgroundColor: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '4px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                zIndex: 1000,
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+              }}>
+                {/* Select All / Clear All buttons */}
+                <div style={{
+                  padding: '0.5rem',
+                  borderBottom: '1px solid #e2e8f0',
+                  display: 'flex',
+                  gap: '0.5rem'
+                }}>
+                  <button
+                    onClick={() => {
+                      const filteredCodes = filteredCountries.map(c => c.code);
+                      setSelectedCountries(prev => [...new Set([...prev, ...filteredCodes])]);
+                    }}
+                    style={{
+                      padding: '0.2rem 0.5rem',
+                      fontSize: '0.7rem',
+                      backgroundColor: '#3182ce',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '3px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => {
+                      const filteredCodes = filteredCountries.map(c => c.code);
+                      setSelectedCountries(prev => prev.filter(code => !filteredCodes.includes(code)));
+                    }}
+                    style={{
+                      padding: '0.2rem 0.5rem',
+                      fontSize: '0.7rem',
+                      backgroundColor: '#e53e3e',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '3px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Clear All
+                  </button>
+                </div>
+                
+                {/* Country list with checkboxes */}
+                {filteredCountries.map(country => (
+                  <div
+                    key={country.code}
+                    onClick={() => {
+                      setSelectedCountries(prev => 
+                        prev.includes(country.code)
+                          ? prev.filter(c => c !== country.code)
+                          : [...prev, country.code]
+                      );
+                    }}
+                    style={{
+                      padding: '0.5rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      backgroundColor: selectedCountries.includes(country.code) ? '#ebf8ff' : '#ffffff',
+                      borderBottom: '1px solid #f7fafc'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f7fafc'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = selectedCountries.includes(country.code) ? '#ebf8ff' : '#ffffff'}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCountries.includes(country.code)}
+                      onChange={() => {}} // Handled by parent div onClick
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '0.9rem', color: '#4a5568' }}>
+                      {country.name}
+                    </span>
+                  </div>
+                ))}
+                
+                {filteredCountries.length === 0 && (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: '#718096', fontSize: '0.9rem' }}>
+                    No countries found
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Click outside to close dropdown */}
+            {showCountryDropdown && (
+              <div
                 style={{
-                  padding: '0.3rem 0.6rem',
-                  borderRadius: 4,
-                  border: '1px solid #cbd5e0',
-                  backgroundColor: selectedCountries.includes(country.code) ? '#3182ce' : '#ffffff',
-                  color: selectedCountries.includes(country.code) ? '#ffffff' : '#4a5568',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 999
                 }}
-              >
-                {country.name}
-              </button>
-            ))}
+                onClick={() => setShowCountryDropdown(false)}
+              />
+            )}
           </div>
         </div>
       )}
