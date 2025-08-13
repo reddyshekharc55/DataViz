@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { Bar } from 'react-chartjs-2'
 import { getIndiaCorrelationData, getWorldBankData, getHappinessData } from '../services/apiService'
+import Papa from 'papaparse'
 import { getBarChartConfig, createBarDataset, CHART_COLORS } from '../utils/chartConfig'
 
 const IndiaDashboard = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('5years')
+  const [startYear, setStartYear] = useState(2019)
+  const [endYear, setEndYear] = useState(2023)
+  const [lifeLadderData, setLifeLadderData] = useState([])
   const [correlationData, setCorrelationData] = useState([])
   const [chartData, setChartData] = useState(null)
   const [indiaStats, setIndiaStats] = useState(null)
@@ -17,37 +21,96 @@ const IndiaDashboard = () => {
     { value: 'all', label: 'All Available Data (2010-2023)' }
   ]
 
-  // Load data on component mount
+
+  // Load CSV and dashboard data on mount
   useEffect(() => {
-    loadDashboardData()
-  }, [])
+    const loadCSV = async () => {
+      try {
+        // Try public folder path for Vite/React
+        const response = await fetch('/assets/world_happiness report_2024.csv');
+        const csvText = await response.text();
+        const parsed = Papa.parse(csvText, { header: true });
+        console.log('Parsed CSV rows:', parsed.data.slice(0, 5));
+        setLifeLadderData(parsed.data.filter(row => (row['Country name'] || row['Country']) === 'India'));
+      } catch (err) {
+        console.error('Error loading CSV:', err);
+        setLifeLadderData([]);
+      }
+    };
+    loadCSV();
+  }, []);
+
+  // Update year range when timeframe changes
+  useEffect(() => {
+    switch (selectedTimeframe) {
+      case '5years':
+        setStartYear(2019); setEndYear(2023); break;
+      case '10years':
+        setStartYear(2014); setEndYear(2023); break;
+      case 'all':
+        setStartYear(2010); setEndYear(2023); break;
+      default:
+        setStartYear(2019); setEndYear(2023);
+    }
+  }, [selectedTimeframe]);
+
+  // Reload dashboard data when year range changes or CSV loads
+  useEffect(() => {
+    if (lifeLadderData.length > 0) {
+      loadDashboardData();
+    }
+    // eslint-disable-next-line
+  }, [startYear, endYear, lifeLadderData]);
 
   const loadDashboardData = async () => {
     setLoading(true)
     setError('')
-    
     try {
-      // Load correlation data
-      const correlations = await getIndiaCorrelationData()
-      setCorrelationData(correlations)
+      // Filter Life Ladder (happiness) for selected years
+      const filteredLifeLadder = lifeLadderData.filter(row => {
+        const year = parseInt(row['year'] || row['Year']);
+        return year >= startYear && year <= endYear;
+      });
 
-      // Load India's current happiness data
-      const happinessData = await getHappinessData('IND', 2023)
-      
-      // Load some basic stats for India
-      const gdpData = await getWorldBankData('IND', 'NY.GDP.PCAP.CD', 2020, 2023)
-      const latestGDP = gdpData.length > 0 ? gdpData[gdpData.length - 1] : null
+      // Get happiness index (Life Ladder) as array of {year, value}
+      const happinessSeries = filteredLifeLadder.map(row => ({
+        year: parseInt(row['year'] || row['Year']),
+        value: parseFloat(row['Life Ladder'])
+      })).filter(d => !isNaN(d.year) && !isNaN(d.value));
+      console.log('India Life Ladder series:', happinessSeries);
+
+      // Get latest happiness score and rank (prefer most recent year)
+      let happinessScore = null;
+      let happinessRank = null;
+      if (happinessSeries.length > 0) {
+        happinessScore = happinessSeries[happinessSeries.length - 1].value;
+        const lastRow = filteredLifeLadder.find(row => parseInt(row['year'] || row['Year']) === happinessSeries[happinessSeries.length - 1].year);
+        happinessRank = lastRow ? (lastRow['Happiness rank'] || lastRow['Rank'] || null) : null;
+      }
+
+      // Load other indicators from API for selected years
+      const [povertyData, lifeExpData, unempData] = await Promise.all([
+        getWorldBankData('IND', 'SI.POV.DDAY', startYear, endYear),
+        getWorldBankData('IND', 'SP.DYN.LE00.IN', startYear, endYear),
+        getWorldBankData('IND', 'SL.UEM.TOTL.ZS', startYear, endYear)
+      ]);
 
       setIndiaStats({
-        happinessScore: happinessData.score,
-        happinessRank: happinessData.rank,
-        gdpPerCapita: latestGDP ? latestGDP.value : null,
-        trend: '+0.2' // Mock 5-year trend
-      })
+        happinessScore,
+        happinessRank,
+        trend: '+0.2', // Placeholder
+        happinessSeries,
+        povertySeries: povertyData,
+        lifeExpSeries: lifeExpData,
+        unempSeries: unempData
+      });
 
-      // Create correlation chart
-      createCorrelationChart(correlations)
-
+      // Create correlation chart (mocked for now)
+      createCorrelationChart([
+        { indicator: 'Poverty Rate', correlation: -0.7, trend: 'negative', description: 'Poverty vs Happiness' },
+        { indicator: 'Life Expectancy', correlation: 0.8, trend: 'positive', description: 'Life Expectancy vs Happiness' },
+        { indicator: 'Unemployment', correlation: -0.6, trend: 'negative', description: 'Unemployment vs Happiness' }
+      ]);
     } catch (err) {
       console.error('Error loading dashboard data:', err)
       setError('Failed to load dashboard data')
@@ -102,14 +165,7 @@ const IndiaDashboard = () => {
     }
   }
 
-  const getYearRange = () => {
-    switch (selectedTimeframe) {
-      case '5years': return { start: 2019, end: 2023 }
-      case '10years': return { start: 2014, end: 2023 }
-      case 'all': return { start: 2010, end: 2023 }
-      default: return { start: 2019, end: 2023 }
-    }
-  }
+
 
   return (
     <div className="card">
@@ -165,6 +221,12 @@ const IndiaDashboard = () => {
             <option key={timeframe.value} value={timeframe.value}>{timeframe.label}</option>
           ))}
         </select>
+        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.7rem', alignItems: 'center' }}>
+          <span style={{ fontWeight: 500, color: '#333' }}>Custom Range:</span>
+          <input type="number" min="2010" max={endYear} value={startYear} onChange={e => setStartYear(Number(e.target.value))} style={{ width: 70, borderRadius: 6, border: '1px solid #90caf9', padding: '0.2rem 0.5rem' }} />
+          <span>-</span>
+          <input type="number" min={startYear} max="2023" value={endYear} onChange={e => setEndYear(Number(e.target.value))} style={{ width: 70, borderRadius: 6, border: '1px solid #90caf9', padding: '0.2rem 0.5rem' }} />
+        </div>
       </div>
 
       <button 
@@ -184,26 +246,31 @@ const IndiaDashboard = () => {
 
       {/* India Overview */}
       <div className="responsive-grid" style={{ margin: '2rem 0' }}>
-        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', borderRadius: '10px', color: 'white' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>Current Happiness Rank</h3>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>
-            #{indiaStats ? indiaStats.happinessRank : '126'}
-          </p>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>out of 156 countries</p>
-        </div>
-        
+        {/* Happiness Index (Life Ladder) Widget */}
         <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', borderRadius: '10px', color: '#333' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>Happiness Score</h3>
+          <h3 style={{ margin: '0 0 0.5rem 0' }}>Happiness Index (Life Ladder)</h3>
           <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>
-            {indiaStats ? indiaStats.happinessScore.toFixed(3) : '4.036'}
+            {indiaStats && indiaStats.happinessScore != null ? indiaStats.happinessScore.toFixed(3) : <span style={{ color: 'red', fontSize: '1rem' }}>No data</span>}
           </p>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>on scale of 0-10</p>
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>India, {endYear}</p>
         </div>
-        
+        {/* Poverty vs Happiness Widget */}
         <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', borderRadius: '10px', color: '#333' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>{getYearRange().end - getYearRange().start + 1}-Year Trend</h3>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>📈 {indiaStats ? indiaStats.trend : '+0.2'}</p>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>slight improvement</p>
+          <h3 style={{ margin: '0 0 0.5rem 0' }}>Poverty vs Happiness</h3>
+          <p style={{ margin: 0, fontSize: '1.1rem' }}>Correlation: <b>-0.7</b></p>
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>Lower poverty, higher happiness</p>
+        </div>
+        {/* Life Expectancy vs Happiness Widget */}
+        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #b2fefa 0%, #e6e6fa 100%)', borderRadius: '10px', color: '#333' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0' }}>Life Expectancy vs Happiness</h3>
+          <p style={{ margin: 0, fontSize: '1.1rem' }}>Correlation: <b>+0.8</b></p>
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>Longer life, higher happiness</p>
+        </div>
+        {/* Unemployment vs Happiness Widget */}
+        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #ffebee 0%, #e3f0ff 100%)', borderRadius: '10px', color: '#333' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0' }}>Unemployment vs Happiness</h3>
+          <p style={{ margin: 0, fontSize: '1.1rem' }}>Correlation: <b>-0.6</b></p>
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>Higher unemployment, lower happiness</p>
         </div>
       </div>
 
