@@ -27,7 +27,9 @@ const IndiaDashboard = () => {
     const loadCSV = async () => {
       try {
         // Try public folder path for Vite/React
-        const response = await fetch('/assets/world_happiness report_2024.csv');
+        const response = await fetch('/world_happiness_report_2024.csv');
+        console.log('response',response);
+        
         const csvText = await response.text();
         const parsed = Papa.parse(csvText, { header: true });
         console.log('Parsed CSV rows:', parsed.data.slice(0, 5));
@@ -71,6 +73,7 @@ const IndiaDashboard = () => {
         const year = parseInt(row['year'] || row['Year']);
         return year >= startYear && year <= endYear;
       });
+      console.log('India Life Ladder series filteredLifeLadder :', filteredLifeLadder);
 
       // Get happiness index (Life Ladder) as array of {year, value}
       const happinessSeries = filteredLifeLadder.map(row => ({
