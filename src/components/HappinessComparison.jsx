@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js'
-import { getWorldBankData, getCountries, getHappinessDataRange, getMultiCountryCorrelationData, calculateCorrelation, INDICATORS } from '../services/apiService'
+import { getWorldBankData, getCountriesFromCSV, getHappinessDataFromCSV, getMultiCountryCorrelationData, calculateCorrelation, getAvailableCorrelationYears, getAvailableTimeSeriesYears, getValidCorrelationYears, INDICATORS } from '../services/apiService'
 import { CHART_COLORS } from '../utils/chartConfig'
 
 ChartJS.register(
@@ -31,6 +31,8 @@ const HappinessComparison = () => {
   const [startYear, setStartYear] = useState('2015')
   const [endYear, setEndYear] = useState('2023')
   const [correlationYear, setCorrelationYear] = useState(2022)
+  const [availableCorrelationYears, setAvailableCorrelationYears] = useState([])
+  const [availableTimeSeriesYears, setAvailableTimeSeriesYears] = useState([])
   const [countries, setCountries] = useState([])
   const [chartData, setChartData] = useState(null)
   const [correlationData, setCorrelationData] = useState(null)
@@ -46,82 +48,16 @@ const HappinessComparison = () => {
     country.name.toLowerCase().includes(countrySearchTerm.toLowerCase())
   )
 
-  // Generate minimal dummy data when API data is not available
-  const generateDummyIndicatorData = (startYear, endYear, indicatorType) => {
-    const years = []
-    const data = []
-    
-    for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
-      years.push(year)
-      
-      // Generate realistic dummy values based on indicator type
-      let baseValue
-      if (indicatorType === 'NY.GDP.PCAP.CD') {
-        baseValue = 15000 + Math.random() * 25000 // GDP: 15k-40k range
-      } else if (indicatorType.includes('SL.UEM')) {
-        baseValue = 3 + Math.random() * 8 // Unemployment: 3-11% range
-      } else if (indicatorType.includes('SI.POV')) {
-        baseValue = 1 + Math.random() * 15 // Poverty: 1-16% range
-      } else if (indicatorType === 'SP.DYN.LE00.IN') {
-        baseValue = 65 + Math.random() * 15 // Life expectancy: 65-80 range
-      } else {
-        baseValue = 50 + Math.random() * 50 // Default: 50-100 range
-      }
-      
-      // Add some variation year over year
-      const variation = (Math.random() - 0.5) * 0.1 * baseValue
-      data.push({ year, value: Math.max(0, baseValue + variation) })
-    }
-    
-    return data
-  }
-
-  const generateDummyHappinessData = (startYear, endYear) => {
-    const data = []
-    const baseScore = 5.5 + Math.random() * 2 // Base happiness between 5.5-7.5
-    
-    for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
-      const variation = (Math.random() - 0.5) * 0.8 // Small yearly variations
-      const score = Math.max(1, Math.min(10, baseScore + variation))
-      data.push({ year, score: parseFloat(score.toFixed(2)) })
-    }
-    
-    return data
-  }
-
-  const generateDummyCorrelationData = (countries, indicatorType) => {
-    return countries.map(countryCode => {
-      const baseHappiness = 4 + Math.random() * 4 // Happiness 4-8 range
-      
-      let indicatorValue
-      if (indicatorType === 'NY.GDP.PCAP.CD') {
-        indicatorValue = 10000 + Math.random() * 40000
-      } else if (indicatorType.includes('SL.UEM')) {
-        indicatorValue = 2 + Math.random() * 12
-      } else if (indicatorType.includes('SI.POV')) {
-        indicatorValue = 0.5 + Math.random() * 20
-      } else {
-        indicatorValue = 20 + Math.random() * 80
-      }
-      
-      return {
-        countryCode,
-        year: correlationYear,
-        happiness: parseFloat(baseHappiness.toFixed(2)),
-        [indicatorType]: parseFloat(indicatorValue.toFixed(2))
-      }
-    })
-  }
-
-  // Load countries on component mount
+  // Load countries and available correlation years on component mount
   useEffect(() => {
-    const loadCountries = async () => {
+    const loadData = async () => {
       try {
-        const countriesData = await getCountries()
+        // Load countries
+        const countriesData = await getCountriesFromCSV()
         setCountries(countriesData)
       } catch (err) {
-        console.error('Error loading countries:', err)
-        // Set fallback countries
+        console.error('Error loading data:', err)
+        // Set fallback countries that are known to be in the CSV
         setCountries([
           { code: 'IND', name: 'India' },
           { code: 'USA', name: 'United States' },
@@ -136,8 +72,48 @@ const HappinessComparison = () => {
         ])
       }
     }
-    loadCountries()
+    loadData()
   }, [])
+
+  // Update available years when country changes (time series) or countries change (correlation)
+  useEffect(() => {
+    const updateAvailableYears = async () => {
+      if (analysisMode === 'time-series' && selectedCountry && selectedIndicator && countries.length > 0) {
+        try {
+          const availableYears = await getAvailableTimeSeriesYears(selectedCountry, selectedIndicator)
+          setAvailableTimeSeriesYears(availableYears)
+          
+          // Reset start and end year to available range
+          if (availableYears.length > 0) {
+            const minYear = Math.min(...availableYears)
+            const maxYear = Math.max(...availableYears)
+            setStartYear(minYear.toString())
+            setEndYear(maxYear.toString())
+          }
+        } catch (err) {
+          console.error('Error getting available years for country and indicator:', err)
+          // Fallback to a reasonable range
+          setAvailableTimeSeriesYears([2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023])
+        }
+      } else if (analysisMode === 'correlation' && selectedCountries.length > 0 && selectedIndicator) {
+        try {
+          const availableYears = await getValidCorrelationYears(selectedCountries, selectedIndicator)
+          setAvailableCorrelationYears(availableYears)
+          
+          // Update correlation year if current one is not available
+          if (availableYears.length > 0 && !availableYears.includes(correlationYear)) {
+            setCorrelationYear(availableYears[0])
+          }
+        } catch (err) {
+          console.error('Error getting available years for countries and indicator:', err)
+          // Fallback to hardcoded years
+          setAvailableCorrelationYears([2022, 2021, 2020, 2019, 2018])
+        }
+      }
+    }
+    
+    updateAvailableYears()
+  }, [selectedCountry, selectedCountries, selectedIndicator, analysisMode, countries])
 
   // Fetch and combine data based on analysis mode
   useEffect(() => {
@@ -160,43 +136,55 @@ const HappinessComparison = () => {
       // Fetch indicator data (GDP, unemployment, poverty, etc.)
       const indicatorData = await getWorldBankData(selectedCountry, selectedIndicator, parseInt(startYear), parseInt(endYear))
       
-      // Fetch happiness data using the service
-      const happinessData = await getHappinessDataRange(selectedCountry, parseInt(startYear), parseInt(endYear))
+      // Fetch happiness data from CSV
+      const happinessData = await getHappinessDataFromCSV(selectedCountry, parseInt(startYear), parseInt(endYear))
 
-      // Use fallback dummy data if API data is not available
-      let finalIndicatorData = indicatorData
-      let finalHappinessData = happinessData
-      let isUsingDummyData = false
+      // Check if we have both types of data
+      if ((!indicatorData || indicatorData.length === 0) && (!happinessData || happinessData.length === 0)) {
+        setError(`No data available for ${countryName} in the selected time period.`)
+        setChartData(null)
+        setLoading(false)
+        return
+      }
 
       if (!indicatorData || indicatorData.length === 0) {
-        finalIndicatorData = generateDummyIndicatorData(startYear, endYear, selectedIndicator)
-        isUsingDummyData = true
+        setError(`${INDICATORS.find(i => i.value === selectedIndicator)?.label} data not available for ${countryName}.`)
+        setChartData(null)
+        setLoading(false)
+        return
       }
 
       if (!happinessData || happinessData.length === 0) {
-        finalHappinessData = generateDummyHappinessData(startYear, endYear)
-        isUsingDummyData = true
+        setError(`Happiness data not available for ${countryName} in the selected time period.`)
+        setChartData(null)
+        setLoading(false)
+        return
       }
 
-      if (isUsingDummyData) {
-        setError(`⚠️ Using sample data for demonstration purposes. ${!indicatorData || indicatorData.length === 0 ? INDICATORS.find(i => i.value === selectedIndicator)?.label + ' data' : ''} ${(!indicatorData || indicatorData.length === 0) && (!happinessData || happinessData.length === 0) ? ' and ' : ''} ${!happinessData || happinessData.length === 0 ? 'happiness data' : ''} not available for ${countryName}.`)
-      } else {
-        setError('')
+      // Align data by year - find common years
+      const indicatorYears = indicatorData.map(item => item.year)
+      const happinessYears = happinessData.map(item => item.year)
+      const commonYears = indicatorYears.filter(year => happinessYears.includes(year)).sort()
+
+      if (commonYears.length === 0) {
+        setError(`No overlapping data found for ${countryName} between ${startYear} and ${endYear}.`)
+        setChartData(null)
+        setLoading(false)
+        return
       }
 
-      // Align data by year
-      const years = finalIndicatorData.map(item => item.year)
-      const indicatorValues = finalIndicatorData.map(item => item.value)
-      const happinessValues = finalHappinessData
-        .filter(item => years.includes(item.year))
-        .sort((a, b) => a.year - b.year)
-        .map(item => item.score)
+      // Filter data to common years
+      const filteredIndicatorData = indicatorData.filter(item => commonYears.includes(item.year))
+      const filteredHappinessData = happinessData.filter(item => commonYears.includes(item.year))
+
+      const indicatorValues = filteredIndicatorData.map(item => item.value)
+      const happinessValues = filteredHappinessData.map(item => item.score)
 
       // Create dual-axis chart configuration
       const chartConfig = {
         type: 'line',
         data: {
-          labels: years,
+          labels: commonYears,
           datasets: [
             {
               label: INDICATORS.find(i => i.value === selectedIndicator)?.label || 'Indicator',
@@ -335,21 +323,17 @@ const HappinessComparison = () => {
         item[selectedIndicator] !== undefined
       )
       
-      // Use dummy data if insufficient real data
-      let finalData = completeData
-      let isUsingDummyData = false
-
       if (completeData.length < 3) {
-        finalData = generateDummyCorrelationData(selectedCountries, selectedIndicator)
-        isUsingDummyData = true
-        setError(`⚠️ Using sample data for demonstration purposes. Insufficient real data available for correlation analysis (${completeData.length} countries with complete data).`)
-      } else {
-        setError('')
+        setError(`Insufficient data available for correlation analysis. Only ${completeData.length} countries have complete data for ${correlationYear}.`)
+        setCorrelationData(null)
+        setCorrelation(null)
+        setLoading(false)
+        return
       }
       
       // Calculate correlation
-      const xValues = finalData.map(item => item[selectedIndicator])
-      const yValues = finalData.map(item => item.happiness)
+      const xValues = completeData.map(item => item[selectedIndicator])
+      const yValues = completeData.map(item => item.happiness)
       const corr = calculateCorrelation(xValues, yValues)
       setCorrelation(corr)
       
@@ -357,7 +341,7 @@ const HappinessComparison = () => {
       const scatterData = {
         datasets: [{
           label: 'Countries',
-          data: finalData.map(item => ({
+          data: completeData.map(item => ({
             x: item[selectedIndicator],
             y: item.happiness,
             countryCode: item.countryCode
@@ -513,27 +497,59 @@ const HappinessComparison = () => {
           background: #ccc;
           cursor: not-allowed;
         }
+        .custom-checkbox {
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          width: 16px;
+          height: 16px;
+          border: 2px solid #4a5568;
+          border-radius: 3px;
+          background-color: #ffffff;
+          cursor: pointer;
+          position: relative;
+          margin: 0;
+          transition: all 0.2s ease;
+        }
+        .custom-checkbox:checked {
+          background-color: #3182ce;
+          border-color: #3182ce;
+        }
+        .custom-checkbox:checked::after {
+          content: '✓';
+          position: absolute;
+          top: -2px;
+          left: 1px;
+          font-size: 12px;
+          color: #ffffff;
+          font-weight: bold;
+          line-height: 1;
+        }
+        .custom-checkbox:hover {
+          border-color: #3182ce;
+          box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+        }
       `}</style>
       
-      <h2 style={{ margin: 0, marginBottom: '0.3rem', fontSize: '1.5rem', color: '#2d3748' }}>
+      <h2 style={{ margin: 0, marginBottom: '0.25rem', fontSize: '1.4rem', color: '#2d3748' }}>
         📈 {analysisMode === 'time-series' ? 'Happiness Indicator Analysis' : 'Multi-Country Correlation Analysis'}
       </h2>
-      <p style={{ margin: 0, marginBottom: '0.5rem', color: '#4a5568', fontSize: '0.9rem' }}>
+      <p style={{ margin: 0, marginBottom: '0.5rem', color: '#4a5568', fontSize: '0.85rem' }}>
         {analysisMode === 'time-series' 
           ? 'Compare various indicators (GDP, poverty, unemployment) with happiness scores over time'
           : 'Analyze correlations between poverty/unemployment indicators and happiness across countries'
         }
       </p>
       <div style={{
-        marginBottom: '1rem',
-        padding: '0.5rem',
+        marginBottom: '0.75rem',
+        padding: '0.4rem',
         backgroundColor: '#e7f3ff',
-        borderRadius: 6,
+        borderRadius: 4,
         border: '1px solid #b3d9ff',
-        fontSize: '0.8rem',
+        fontSize: '0.75rem',
         color: '#0066cc'
       }}>
-        <strong>📊 Data Availability:</strong> Happiness data is available for 35+ countries including India, USA, Germany, Japan, Canada, Australia, etc. 
+        <strong>📊 Data Sources:</strong> Happiness data from World Happiness Report 2024 dataset. World Bank indicators available for economic and social metrics. 
         {analysisMode === 'correlation' && ' Correlation analysis requires at least 3 countries with complete data.'}
       </div>
 
@@ -572,13 +588,120 @@ const HappinessComparison = () => {
         </div>
       </div>
 
+      {/* Selected Countries Display for Correlation Mode */}
+      {analysisMode === 'correlation' && (
+        <div style={{
+          backgroundColor: '#f8fafc',
+          border: '1px solid #e2e8f0',
+          borderRadius: '6px',
+          padding: '0.5rem 0.75rem',
+          margin: '0 0 0.5rem 0'
+        }}>
+          <div style={{ 
+            fontSize: '0.8rem', 
+            fontWeight: 'bold', 
+            color: '#4a5568', 
+            marginBottom: selectedCountries.length > 0 ? '0.4rem' : '0'
+          }}>
+            Selected Countries ({selectedCountries.length}):
+            {availableCorrelationYears.length > 0 && (
+              <span style={{ 
+                fontSize: '0.7rem', 
+                fontWeight: 'normal', 
+                color: '#718096',
+                marginLeft: '0.5rem'
+              }}>
+                • {availableCorrelationYears.length} valid year{availableCorrelationYears.length !== 1 ? 's' : ''} available
+              </span>
+            )}
+          </div>
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.4rem',
+            maxHeight: selectedCountries.length > 8 ? '60px' : 'auto',
+            overflow: selectedCountries.length > 8 ? 'auto' : 'visible'
+          }}>
+            {selectedCountries.map(countryCode => {
+              const country = countries.find(c => c.code === countryCode)
+              return (
+                <span
+                  key={countryCode}
+                  style={{
+                    backgroundColor: '#3182ce',
+                    color: '#ffffff',
+                    padding: '0.2rem 0.6rem',
+                    borderRadius: '12px',
+                    fontSize: '0.75rem',
+                    fontWeight: '500',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
+                  }}
+                >
+                  {country?.name || countryCode}
+                  <button
+                    onClick={() => {
+                      setSelectedCountries(selectedCountries.filter(code => code !== countryCode))
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      padding: '0',
+                      fontSize: '0.9rem',
+                      lineHeight: '1',
+                      opacity: 0.8
+                    }}
+                    title={`Remove ${country?.name || countryCode}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              )
+            })}
+            {selectedCountries.length === 0 && (
+              <span style={{ 
+                color: '#a0aec0', 
+                fontStyle: 'italic',
+                fontSize: '0.75rem' 
+              }}>
+                No countries selected. Please select countries from the dropdown below.
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Current Selection Display for Time Series Mode */}
+      {analysisMode === 'time-series' && (
+        <div style={{
+          backgroundColor: '#f0f9ff',
+          border: '1px solid #bae6fd',
+          borderRadius: '4px',
+          padding: '0.5rem 0.75rem',
+          margin: '0 0 0.75rem 0',
+          fontSize: '0.8rem',
+          color: '#0369a1'
+        }}>
+          <strong>Analyzing:</strong> {countries.find(c => c.code === selectedCountry)?.name || selectedCountry} | 
+          <strong> Indicator:</strong> {INDICATORS.find(i => i.value === selectedIndicator)?.label || selectedIndicator}
+          {availableTimeSeriesYears.length > 0 && (
+            <span style={{ marginLeft: '0.5rem' }}>
+              | <strong>Available Years:</strong> {availableTimeSeriesYears.length} ({Math.min(...availableTimeSeriesYears)}-{Math.max(...availableTimeSeriesYears)})
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Controls */}
       <div style={{
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: '1rem',
-        margin: '0 0 1rem 0',
+        gap: '0.75rem',
+        margin: '0 0 0.5rem 0',
         alignItems: 'flex-end',
         justifyContent: 'space-between',
       }}>
@@ -623,7 +746,7 @@ const HappinessComparison = () => {
                   onChange={(e) => setStartYear(e.target.value)}
                   disabled={loading}
                 >
-                  {Array.from({ length: 14 }, (_, i) => 2010 + i).map(year => (
+                  {availableTimeSeriesYears.map(year => (
                     <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
@@ -636,7 +759,7 @@ const HappinessComparison = () => {
                   onChange={(e) => setEndYear(e.target.value)}
                   disabled={loading}
                 >
-                  {Array.from({ length: 14 }, (_, i) => 2010 + i).map(year => (
+                  {availableTimeSeriesYears.map(year => (
                     <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
@@ -644,18 +767,133 @@ const HappinessComparison = () => {
             </>
           ) : (
             // Correlation analysis controls
-            <div className="form-group" style={{ minWidth: 100, flex: 1 }}>
-              <label>Year:</label>
-              <select
-                value={correlationYear}
-                onChange={(e) => setCorrelationYear(parseInt(e.target.value))}
-                disabled={loading}
-              >
-                {[2022, 2021, 2020, 2019, 2018].map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
+            <>
+              <div className="form-group" style={{ minWidth: 200, flex: 1, position: 'relative' }}>
+                <label>Select Countries:</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="text"
+                    placeholder={`${selectedCountries.length} countries selected - click to change`}
+                    value={countrySearchTerm}
+                    onChange={(e) => setCountrySearchTerm(e.target.value)}
+                    onFocus={() => setShowCountryDropdown(true)}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 1.2rem 0.5rem 0.7rem',
+                      border: showCountryDropdown ? '1.5px solid #3182ce' : '1.5px solid #b3b3b3',
+                      borderRadius: '0.7rem',
+                      fontSize: '1.08rem',
+                      backgroundColor: '#f8fafc',
+                      color: '#222',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      transition: 'border 0.2s, box-shadow 0.2s',
+                      boxShadow: showCountryDropdown ? '0 0 0 2px #90cdf4' : '0 1px 4px 0 rgba(60,60,60,0.04)'
+                    }}
+                  />
+                  
+                  {/* Dropdown with checkboxes */}
+                  {showCountryDropdown && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '4px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      zIndex: 1000,
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    }}>
+                      {/* Select All / Clear All buttons */}
+                      <div style={{
+                        padding: '0.5rem',
+                        borderBottom: '1px solid #e2e8f0',
+                        display: 'flex',
+                        gap: '0.5rem'
+                      }}>
+                        <button
+                          onClick={() => {
+                            const allCodes = countries.map(c => c.code)
+                            setSelectedCountries(allCodes)
+                          }}
+                          style={{
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.7rem',
+                            background: '#e2e8f0',
+                            border: 'none',
+                            borderRadius: '3px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Select All
+                        </button>
+                        <button
+                          onClick={() => setSelectedCountries([])}
+                          style={{
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.7rem',
+                            background: '#fed7d7',
+                            border: 'none',
+                            borderRadius: '3px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                      
+                      {filteredCountries.map(country => (
+                        <div
+                          key={country.code}
+                          style={{
+                            padding: '0.5rem',
+                            borderBottom: '1px solid #f7fafc',
+                            cursor: 'pointer',
+                            backgroundColor: selectedCountries.includes(country.code) ? '#ebf8ff' : '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                          }}
+                          onClick={() => {
+                            if (selectedCountries.includes(country.code)) {
+                              setSelectedCountries(selectedCountries.filter(code => code !== country.code))
+                            } else {
+                              setSelectedCountries([...selectedCountries, country.code])
+                            }
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            className="custom-checkbox"
+                            checked={selectedCountries.includes(country.code)}
+                            onChange={() => {}} // Handled by parent onClick
+                          />
+                          <span style={{ fontSize: '0.8rem', color: '#2d3748' }}>
+                            {country.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="form-group" style={{ minWidth: 100, flex: 1 }}>
+                <label>Year:</label>
+                <select
+                  value={correlationYear}
+                  onChange={(e) => setCorrelationYear(parseInt(e.target.value))}
+                  disabled={loading}
+                >
+                  {availableCorrelationYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
         </div>
         
@@ -668,151 +906,19 @@ const HappinessComparison = () => {
         </button>
       </div>
 
-      {/* Country Selection for Correlation Mode */}
-      {analysisMode === 'correlation' && (
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#4a5568', marginBottom: '0.5rem', display: 'block' }}>
-            Select Countries for Analysis ({selectedCountries.length} selected):
-          </label>
-          <div style={{ position: 'relative', width: '100%' }}>
-            {/* Search Input */}
-            <input
-              type="text"
-              placeholder="Search countries..."
-              value={countrySearchTerm}
-              onChange={(e) => setCountrySearchTerm(e.target.value)}
-              onFocus={() => setShowCountryDropdown(true)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: showCountryDropdown ? '1px solid #3182ce' : '1px solid #e2e8f0',
-                borderRadius: '4px',
-                fontSize: '0.9rem',
-                backgroundColor: '#ffffff',
-                color: '#2d3748',
-                outline: 'none',
-                boxSizing: 'border-box',
-                transition: 'border-color 0.2s ease'
-              }}
-            />
-            
-            {/* Dropdown with checkboxes */}
-            {showCountryDropdown && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                right: 0,
-                backgroundColor: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: '4px',
-                maxHeight: '200px',
-                overflowY: 'auto',
-                zIndex: 1000,
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-              }}>
-                {/* Select All / Clear All buttons */}
-                <div style={{
-                  padding: '0.5rem',
-                  borderBottom: '1px solid #e2e8f0',
-                  display: 'flex',
-                  gap: '0.5rem'
-                }}>
-                  <button
-                    onClick={() => {
-                      const filteredCodes = filteredCountries.map(c => c.code);
-                      setSelectedCountries(prev => [...new Set([...prev, ...filteredCodes])]);
-                    }}
-                    style={{
-                      padding: '0.2rem 0.5rem',
-                      fontSize: '0.7rem',
-                      backgroundColor: '#3182ce',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '3px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Select All
-                  </button>
-                  <button
-                    onClick={() => {
-                      const filteredCodes = filteredCountries.map(c => c.code);
-                      setSelectedCountries(prev => prev.filter(code => !filteredCodes.includes(code)));
-                    }}
-                    style={{
-                      padding: '0.2rem 0.5rem',
-                      fontSize: '0.7rem',
-                      backgroundColor: '#e53e3e',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '3px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Clear All
-                  </button>
-                </div>
-                
-                {/* Country list with checkboxes */}
-                {filteredCountries.map(country => (
-                  <div
-                    key={country.code}
-                    onClick={() => {
-                      setSelectedCountries(prev => 
-                        prev.includes(country.code)
-                          ? prev.filter(c => c !== country.code)
-                          : [...prev, country.code]
-                      );
-                    }}
-                    style={{
-                      padding: '0.5rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      backgroundColor: selectedCountries.includes(country.code) ? '#ebf8ff' : '#ffffff',
-                      borderBottom: '1px solid #f7fafc'
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f7fafc'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = selectedCountries.includes(country.code) ? '#ebf8ff' : '#ffffff'}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCountries.includes(country.code)}
-                      onChange={() => {}} // Handled by parent div onClick
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <span style={{ fontSize: '0.9rem', color: '#4a5568' }}>
-                      {country.name}
-                    </span>
-                  </div>
-                ))}
-                
-                {filteredCountries.length === 0 && (
-                  <div style={{ padding: '1rem', textAlign: 'center', color: '#718096', fontSize: '0.9rem' }}>
-                    No countries found
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* Click outside to close dropdown */}
-            {showCountryDropdown && (
-              <div
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  zIndex: 999
-                }}
-                onClick={() => setShowCountryDropdown(false)}
-              />
-            )}
-          </div>
-        </div>
+      {/* Close dropdown when clicking outside */}
+      {showCountryDropdown && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999
+          }}
+          onClick={() => setShowCountryDropdown(false)}
+        />
       )}
 
       {/* Correlation Stats for Correlation Mode */}
@@ -864,7 +970,7 @@ const HappinessComparison = () => {
 
       {/* Chart Area */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#2d3748' }}>
+        <h3 style={{ margin: '0 0 0.4rem 0', fontSize: '1rem', color: '#2d3748' }}>
           {analysisMode === 'time-series' ? 'Time Series Analysis' : 'Correlation Analysis'}
         </h3>
         {loading ? (
@@ -905,40 +1011,6 @@ const HappinessComparison = () => {
           </div>
         )}
       </div>
-
-      {/* Analysis Panel */}
-      {(chartData || correlationData) && !loading && (
-        <div style={{
-          marginTop: '1rem',
-          padding: '0.8rem',
-          backgroundColor: '#f8fafc',
-          borderRadius: 6,
-          border: '1px solid #e2e8f0',
-          flexShrink: 0
-        }}>
-          <h4 style={{ margin: '0 0 0.3rem 0', color: '#2d3748', fontSize: '0.9rem' }}>
-            💡 Analysis Insights
-          </h4>
-          <p style={{ margin: '0 0 0.5rem 0', color: '#4a5568', fontSize: '0.8rem', lineHeight: 1.4 }}>
-            {analysisMode === 'time-series' 
-              ? `This dual-axis chart compares ${INDICATORS.find(i => i.value === selectedIndicator)?.label} with citizen well-being (World Happiness Report scores). Look for correlations, divergences, or interesting patterns between the two metrics.`
-              : `This scatter plot shows the correlation between ${INDICATORS.find(i => i.value === selectedIndicator)?.label} and happiness scores across ${selectedCountries.length} countries. ${correlation ? `Correlation coefficient: ${correlation.toFixed(3)} (${correlationInfo.text.toLowerCase()})` : ''}`
-            }
-          </p>
-          <div style={{ 
-            fontSize: '0.7rem', 
-            color: '#718096',
-            borderTop: '1px solid #e2e8f0',
-            paddingTop: '0.5rem',
-            marginTop: '0.5rem'
-          }}>
-            <strong>Data Sources:</strong> {INDICATORS.find(i => i.value === selectedIndicator)?.label} - World Bank API | Happiness - World Happiness Report 2023
-            {error && error.includes('⚠️') && (
-              <span style={{ color: '#d69e2e', fontWeight: 'bold' }}> | ⚠️ Sample data used for demonstration</span>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

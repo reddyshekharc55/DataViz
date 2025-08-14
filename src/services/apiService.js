@@ -2,10 +2,6 @@ import axios from 'axios'
 
 // API Configuration
 const WORLD_BANK_BASE_URL = 'https://api.worldbank.org/v2'
-const HAPPINESS_DATA_URL = 'https://happiness-report.s3.us-east-1.amazonaws.com/2025/Data+for+Figure+2.1+(2011%E2%80%932024).xlsx'
-
-// Alternative: Use a CSV version of the happiness data if available
-const HAPPINESS_CSV_URL = 'https://raw.githubusercontent.com/datasets/world-happiness/master/data/world-happiness.csv'
 
 // Create axios instances with default configurations
 const worldBankAPI = axios.create({
@@ -16,15 +12,299 @@ const worldBankAPI = axios.create({
   }
 })
 
+// Load and parse happiness data from local CSV
+let happinessDataCache = null
+
+const loadHappinessDataFromCSV = async () => {
+  if (happinessDataCache) {
+    return happinessDataCache
+  }
+
+  try {
+    const response = await fetch('/world_happiness_report_2024_with_codes.csv')
+    const csvText = await response.text()
+    const lines = csvText.split('\n')
+    const headers = lines[0].split(',')
+    
+    const data = []
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim()
+      if (!line) continue
+      
+      const values = line.split(',')
+      if (values.length >= headers.length) {
+        const row = {}
+        headers.forEach((header, index) => {
+          row[header.trim()] = values[index]?.trim()
+        })
+        
+        // Parse numeric values
+        row.year = parseInt(row.year)
+        row['Life Ladder'] = parseFloat(row['Life Ladder'])
+        row['Log GDP per capita'] = parseFloat(row['Log GDP per capita'])
+        row['Social support'] = parseFloat(row['Social support'])
+        row['Healthy life expectancy at birth'] = parseFloat(row['Healthy life expectancy at birth'])
+        row['Freedom to make life choices'] = parseFloat(row['Freedom to make life choices'])
+        row['Generosity'] = parseFloat(row['Generosity'])
+        row['Perceptions of corruption'] = parseFloat(row['Perceptions of corruption'])
+        row['Positive affect'] = parseFloat(row['Positive affect'])
+        row['Negative affect'] = parseFloat(row['Negative affect'])
+        
+        data.push(row)
+      }
+    }
+    
+    happinessDataCache = data
+    return data
+  } catch (error) {
+    console.error('Error loading happiness data from CSV:', error)
+    return []
+  }
+}
+
+// Get happiness data for a specific country and year range from CSV
+export const getHappinessDataFromCSV = async (countryCode, startYear, endYear) => {
+  const allData = await loadHappinessDataFromCSV()
+  
+  return allData
+    .filter(row => 
+      row['Country Code'] === countryCode && 
+      row.year >= startYear && 
+      row.year <= endYear &&
+      !isNaN(row['Life Ladder'])
+    )
+    .map(row => ({
+      year: row.year,
+      score: row['Life Ladder'],
+      country: row['Country name'],
+      socialSupport: row['Social support'],
+      gdpPerCapita: row['Log GDP per capita'],
+      healthyLifeExpectancy: row['Healthy life expectancy at birth'],
+      freedom: row['Freedom to make life choices'],
+      generosity: row['Generosity'],
+      corruption: row['Perceptions of corruption'],
+      positiveAffect: row['Positive affect'],
+      negativeAffect: row['Negative affect']
+    }))
+    .sort((a, b) => a.year - b.year)
+}
+
+// Get available countries from the happiness CSV
+export const getCountriesFromCSV = async () => {
+  const allData = await loadHappinessDataFromCSV()
+  
+  const countryMap = new Map()
+  
+  allData.forEach(row => {
+    if (row['Country Code'] && row['Country name'] && !isNaN(row['Life Ladder'])) {
+      countryMap.set(row['Country Code'], {
+        code: row['Country Code'],
+        name: row['Country name']
+      })
+    }
+  })
+  
+  return Array.from(countryMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+}
+
+// Get happiness data for multiple countries for correlation analysis
+export const getMultiCountryHappinessFromCSV = async (countryCodes, year) => {
+  const allData = await loadHappinessDataFromCSV()
+  
+  return countryCodes.map(countryCode => {
+    const countryData = allData.find(row => 
+      row['Country Code'] === countryCode && 
+      row.year === year &&
+      !isNaN(row['Life Ladder'])
+    )
+    
+    if (countryData) {
+      return {
+        countryCode,
+        year,
+        happiness: countryData['Life Ladder'],
+        country: countryData['Country name']
+      }
+    }
+    
+    return null
+  }).filter(item => item !== null)
+}
+
+// Get available years for correlation analysis based on data coverage
+export const getAvailableCorrelationYears = async (minCountries = 100) => {
+  const allData = await loadHappinessDataFromCSV()
+  
+  // Count countries per year
+  const yearCounts = {}
+  allData.forEach(row => {
+    if (row.year && !isNaN(row['Life Ladder'])) {
+      yearCounts[row.year] = (yearCounts[row.year] || 0) + 1
+    }
+  })
+  
+  // Filter years with sufficient data coverage and sort descending
+  const availableYears = Object.entries(yearCounts)
+    .filter(([year, count]) => count >= minCountries)
+    .map(([year, count]) => ({ year: parseInt(year), count }))
+    .sort((a, b) => b.year - a.year) // Most recent first
+    .map(({ year }) => year)
+  
+  console.log('Available correlation years with data coverage:', 
+    Object.entries(yearCounts)
+      .filter(([year, count]) => count >= minCountries)
+      .map(([year, count]) => `${year}: ${count} countries`)
+      .join(', ')
+  )
+  
+  // Fallback to hardcoded years if no years meet the criteria
+  if (availableYears.length === 0) {
+    console.warn('No years found with sufficient data coverage, using fallback years')
+    return [2022, 2021, 2020, 2019, 2018]
+  }
+  
+  return availableYears
+}
+
+// Get available years for a specific country
+export const getAvailableYearsForCountry = async (countryCode) => {
+  const allData = await loadHappinessDataFromCSV()
+  
+  const countryYears = allData
+    .filter(row => 
+      row['Country Code'] === countryCode && 
+      !isNaN(row['Life Ladder'])
+    )
+    .map(row => row.year)
+    .sort((a, b) => a - b) // Ascending order for time series
+  
+  const uniqueYears = [...new Set(countryYears)] // Remove duplicates
+  console.log(`Available years for ${countryCode}:`, uniqueYears)
+  
+  return uniqueYears
+}
+
+// Cache for World Bank available years to avoid repeated API calls
+const worldBankYearsCache = new Map()
+
+// Get available years from World Bank API for a specific country and indicator
+export const getWorldBankAvailableYears = async (countryCode, indicatorCode) => {
+  const cacheKey = `${countryCode}-${indicatorCode}`
+  
+  // Check cache first
+  if (worldBankYearsCache.has(cacheKey)) {
+    return worldBankYearsCache.get(cacheKey)
+  }
+  
+  try {
+    // World Bank API typically has data from 1960 to recent years, but let's query a reasonable range
+    const response = await fetch(
+      `https://api.worldbank.org/v2/country/${countryCode}/indicator/${indicatorCode}?format=json&date=2005:2025&per_page=500`
+    )
+    const data = await response.json()
+    
+    if (data && data[1]) {
+      const years = data[1]
+        .filter(item => item.value !== null && item.value !== undefined)
+        .map(item => parseInt(item.date))
+        .sort((a, b) => a - b)
+      
+      console.log(`World Bank available years for ${countryCode} - ${indicatorCode}:`, years)
+      
+      // Cache the result
+      worldBankYearsCache.set(cacheKey, years)
+      
+      return years
+    }
+    
+    // Cache empty result
+    worldBankYearsCache.set(cacheKey, [])
+    return []
+  } catch (error) {
+    console.error('Error fetching World Bank available years:', error)
+    // Cache empty result on error
+    worldBankYearsCache.set(cacheKey, [])
+    return []
+  }
+}
+
+// Get available years for time series considering both happiness CSV and World Bank data
+export const getAvailableTimeSeriesYears = async (countryCode, indicatorCode) => {
+  try {
+    // Get years from both sources
+    const happinessYears = await getAvailableYearsForCountry(countryCode)
+    const worldBankYears = await getWorldBankAvailableYears(countryCode, indicatorCode)
+    
+    // Find intersection of both datasets
+    const commonYears = happinessYears.filter(year => worldBankYears.includes(year))
+    
+    console.log(`Common years for ${countryCode} (happiness + ${indicatorCode}):`, commonYears)
+    
+    return commonYears.sort((a, b) => a - b)
+  } catch (error) {
+    console.error('Error getting available time series years:', error)
+    return []
+  }
+}
+
+// Get available years for correlation analysis considering both data sources
+export const getValidCorrelationYears = async (countryCodes, indicatorCode) => {
+  try {
+    // Get happiness years where all countries have data
+    const happinessYears = await getAvailableYearsForCountries(countryCodes)
+    
+    // Get World Bank data availability for all countries at once
+    const worldBankDataMap = new Map()
+    
+    for (const countryCode of countryCodes) {
+      const worldBankYears = await getWorldBankAvailableYears(countryCode, indicatorCode)
+      worldBankDataMap.set(countryCode, new Set(worldBankYears))
+    }
+    
+    // Filter happiness years to only include years where ALL countries have World Bank data
+    const validYears = happinessYears.filter(year => {
+      return countryCodes.every(countryCode => 
+        worldBankDataMap.get(countryCode)?.has(year) || false
+      )
+    })
+    
+    console.log(`Valid correlation years for countries ${countryCodes.join(', ')} with ${indicatorCode}:`, validYears)
+    
+    return validYears.sort((a, b) => b - a) // Most recent first
+  } catch (error) {
+    console.error('Error getting available correlation years:', error)
+    return []
+  }
+}
+
+// Get available years for correlation analysis based on selected countries
+export const getAvailableYearsForCountries = async (countryCodes) => {
+  const allData = await loadHappinessDataFromCSV()
+  
+  // Count how many of the selected countries have data for each year
+  const yearCounts = {}
+  allData.forEach(row => {
+    if (countryCodes.includes(row['Country Code']) && !isNaN(row['Life Ladder'])) {
+      yearCounts[row.year] = (yearCounts[row.year] || 0) + 1
+    }
+  })
+  
+  // Only include years where ALL selected countries have data
+  const availableYears = Object.entries(yearCounts)
+    .filter(([year, count]) => count === countryCodes.length)
+    .map(([year]) => parseInt(year))
+    .sort((a, b) => b - a) // Most recent first
+  
+  console.log(`Available correlation years for countries ${countryCodes.join(', ')}:`, availableYears)
+  
+  return availableYears
+}
+
 // World Bank Indicators
     export const INDICATORS = [
         { value: 'NY.GDP.PCAP.CD', label: 'GDP per Capita' },
         { value: 'SP.DYN.LE00.IN', label: 'Life Expectancy' },
-        { value: 'SE.PRM.NENR', label: 'Education Index' },
         { value: 'SL.UEM.TOTL.ZS', label: 'Unemployment Rate' },
-        { value: 'SI.POV.DDAY', label: 'Poverty headcount ratio at $2.15 a day (2017 PPP)' },
-        { value: 'SI.POV.LMIC', label: 'Poverty headcount ratio at $3.65 a day (2017 PPP)' },
-        { value: 'SI.POV.UMIC', label: 'Poverty headcount ratio at $6.85 a day (2017 PPP)' },
         // { value: 'EN.ATM.CO2E.PC', label: 'CO2 Emissions per Capita' }
         { value: 'EN.GHG.ALL.LU.MT.CE.AR5', label: 'Total greenhouse gas emissions' },
         { value: 'SE.PRM.ENRR', label: 'School enrollment, primary' },
@@ -515,18 +795,21 @@ const generateMockHappinessTimeSeries = (countryCode, startYear, endYear) => {
   return timeSeries
 }
 
-// Get multi-country data for correlation analysis
+// Get multi-country data for correlation analysis using CSV happiness data
 export const getMultiCountryCorrelationData = async (countryCodes, indicators, year = 2022) => {
   try {
     const results = []
     
+    // Get happiness data from CSV for all countries
+    const happinessData = await getMultiCountryHappinessFromCSV(countryCodes, year)
+    
     for (const countryCode of countryCodes) {
       const countryData = { countryCode, year }
       
-      // Get happiness data
-      const happinessData = getRealHappinessData(countryCode)
-      if (happinessData) {
-        countryData.happiness = happinessData.score
+      // Get happiness data from CSV
+      const countryHappiness = happinessData.find(item => item.countryCode === countryCode)
+      if (countryHappiness) {
+        countryData.happiness = countryHappiness.happiness
       }
       
       // Get World Bank indicator data
