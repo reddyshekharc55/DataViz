@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Bar } from 'react-chartjs-2'
+import { Bar, Line } from 'react-chartjs-2'
 import { getIndiaCorrelationData, getWorldBankData, getHappinessData } from '../services/apiService'
 import Papa from 'papaparse'
-import { getBarChartConfig, createBarDataset, CHART_COLORS } from '../utils/chartConfig'
+import { getBarChartConfig, createBarDataset, getLineChartConfig, createTrendDataset, CHART_COLORS } from '../utils/chartConfig'
 
 const IndiaDashboard = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('5years')
@@ -27,12 +27,9 @@ const IndiaDashboard = () => {
     const loadCSV = async () => {
       try {
         // Try public folder path for Vite/React
-        const response = await fetch('/world_happiness_report_2024.csv');
-        console.log('response',response);
-        
+        const response = await fetch('/world_happiness_report_2024_with_codes.csv');
         const csvText = await response.text();
         const parsed = Papa.parse(csvText, { header: true });
-        console.log('Parsed CSV rows:', parsed.data.slice(0, 5));
         setLifeLadderData(parsed.data.filter(row => (row['Country name'] || row['Country']) === 'India'));
       } catch (err) {
         console.error('Error loading CSV:', err);
@@ -108,12 +105,67 @@ const IndiaDashboard = () => {
         unempSeries: unempData
       });
 
-      // Create correlation chart (mocked for now)
-      createCorrelationChart([
-        { indicator: 'Poverty Rate', correlation: -0.7, trend: 'negative', description: 'Poverty vs Happiness' },
-        { indicator: 'Life Expectancy', correlation: 0.8, trend: 'positive', description: 'Life Expectancy vs Happiness' },
-        { indicator: 'Unemployment', correlation: -0.6, trend: 'negative', description: 'Unemployment vs Happiness' }
-      ]);
+      // Compute real correlation coefficients for each indicator vs happiness
+      function computeCorrelation(xArr, yArr) {
+        // Pearson correlation coefficient
+        const n = xArr.length;
+        if (n !== yArr.length || n === 0) return null;
+        const meanX = xArr.reduce((a, b) => a + b, 0) / n;
+        const meanY = yArr.reduce((a, b) => a + b, 0) / n;
+        const num = xArr.map((x, i) => (x - meanX) * (yArr[i] - meanY)).reduce((a, b) => a + b, 0);
+        const denX = Math.sqrt(xArr.map(x => (x - meanX) ** 2).reduce((a, b) => a + b, 0));
+        const denY = Math.sqrt(yArr.map(y => (y - meanY) ** 2).reduce((a, b) => a + b, 0));
+        if (denX === 0 || denY === 0) return null;
+        return num / (denX * denY);
+      }
+
+      const corrData = [];
+      if (happinessSeries.length > 1) {
+        // Poverty
+        if (povertyData && povertyData.length > 1) {
+          const povertyYears = povertyData.map(d => d.year);
+          const povertyVals = povertyData.map(d => d.value);
+          const happyVals = povertyYears.map(y => {
+            const found = happinessSeries.find(h => h.year === y);
+            return found ? found.value : null;
+          });
+          const valid = happyVals.map((v, i) => v != null && !isNaN(povertyVals[i]) && !isNaN(v));
+          const x = povertyVals.filter((_, i) => valid[i]);
+          const y = happyVals.filter((_, i) => valid[i]);
+          const corr = computeCorrelation(x, y);
+          if (corr !== null) corrData.push({ indicator: 'Poverty Rate', correlation: corr, trend: corr > 0 ? 'positive' : 'negative', description: 'Poverty vs Happiness' });
+        }
+        // Life Expectancy
+        if (lifeExpData && lifeExpData.length > 1) {
+          const lifeExpYears = lifeExpData.map(d => d.year);
+          const lifeExpVals = lifeExpData.map(d => d.value);
+          const happyVals = lifeExpYears.map(y => {
+            const found = happinessSeries.find(h => h.year === y);
+            return found ? found.value : null;
+          });
+          const valid = happyVals.map((v, i) => v != null && !isNaN(lifeExpVals[i]) && !isNaN(v));
+          const x = lifeExpVals.filter((_, i) => valid[i]);
+          const y = happyVals.filter((_, i) => valid[i]);
+          const corr = computeCorrelation(x, y);
+          if (corr !== null) corrData.push({ indicator: 'Life Expectancy', correlation: corr, trend: corr > 0 ? 'positive' : 'negative', description: 'Life Expectancy vs Happiness' });
+        }
+        // Unemployment
+        if (unempData && unempData.length > 1) {
+          const unempYears = unempData.map(d => d.year);
+          const unempVals = unempData.map(d => d.value);
+          const happyVals = unempYears.map(y => {
+            const found = happinessSeries.find(h => h.year === y);
+            return found ? found.value : null;
+          });
+          const valid = happyVals.map((v, i) => v != null && !isNaN(unempVals[i]) && !isNaN(v));
+          const x = unempVals.filter((_, i) => valid[i]);
+          const y = happyVals.filter((_, i) => valid[i]);
+          const corr = computeCorrelation(x, y);
+          if (corr !== null) corrData.push({ indicator: 'Unemployment', correlation: corr, trend: corr > 0 ? 'positive' : 'negative', description: 'Unemployment vs Happiness' });
+        }
+      }
+      setCorrelationData(corrData);
+      createCorrelationChart(corrData);
     } catch (err) {
       console.error('Error loading dashboard data:', err)
       setError('Failed to load dashboard data')
@@ -170,28 +222,27 @@ const IndiaDashboard = () => {
 
 
 
+
   return (
-    <div className="card">
+  <div style={{ maxHeight: '90vh', overflowY: 'auto', paddingRight: 8 }}>
       <style>{`
-        .ind-timeframe-card {
-          background: linear-gradient(120deg, #f8fafc 60%, #e3f0ff 100%);
-          box-shadow: 0 4px 24px 0 rgba(60,60,60,0.08);
-          border-radius: 1.1rem;
-          padding: 1.5rem 2rem 1.2rem 2rem;
-          max-width: 340px;
-          margin: 2.5rem auto 2rem auto;
+        .ind-timeframe-row {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 1.5rem;
           align-items: center;
+          justify-content: flex-start;
+          margin: 2.5rem 0 2rem 0;
         }
-        .ind-timeframe-card label {
+        .ind-timeframe-row label {
           font-weight: 700;
           color: #1a237e;
           font-size: 1.08rem;
-          margin-bottom: 0.7rem;
+          margin-right: 0.7rem;
           letter-spacing: 0.02em;
         }
-        .ind-timeframe-card select {
+        .ind-timeframe-row select, .ind-timeframe-row input {
           padding: 0.6rem 1.5rem 0.6rem 0.9rem;
           border: 1.7px solid #90caf9;
           border-radius: 0.8rem;
@@ -202,17 +253,30 @@ const IndiaDashboard = () => {
           transition: border 0.2s, box-shadow 0.2s;
           outline: none;
           box-shadow: 0 2px 8px 0 rgba(60,60,60,0.06);
+          width: auto;
         }
-        .ind-timeframe-card select:focus {
+        .ind-timeframe-row select:focus, .ind-timeframe-row input:focus {
           border: 1.7px solid #1976d2;
           box-shadow: 0 0 0 2px #bbdefb;
         }
-        .ind-timeframe-card select:disabled {
+        .ind-timeframe-row select:disabled, .ind-timeframe-row input:disabled {
           background: #e3e8ef;
           color: #888;
         }
+        .ind-timeframe-row .responsive-button {
+          padding: 0.6rem 1.5rem;
+          background: linear-gradient(45deg, #43e97b, #38f9d7);
+          color: #fff;
+          border: none;
+          border-radius: 0.7rem;
+          font-weight: 600;
+          font-size: 1.08rem;
+          cursor: pointer;
+          box-shadow: 0 1px 4px 0 rgba(60,60,60,0.04);
+          margin: 0;
+        }
       `}</style>
-      <div className="ind-timeframe-card">
+      <div className="ind-timeframe-row">
         <label htmlFor="ind-timeframe-select">Select Timeframe:</label>
         <select
           id="ind-timeframe-select"
@@ -224,22 +288,18 @@ const IndiaDashboard = () => {
             <option key={timeframe.value} value={timeframe.value}>{timeframe.label}</option>
           ))}
         </select>
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.7rem', alignItems: 'center' }}>
-          <span style={{ fontWeight: 500, color: '#333' }}>Custom Range:</span>
-          <input type="number" min="2010" max={endYear} value={startYear} onChange={e => setStartYear(Number(e.target.value))} style={{ width: 70, borderRadius: 6, border: '1px solid #90caf9', padding: '0.2rem 0.5rem' }} />
-          <span>-</span>
-          <input type="number" min={startYear} max="2023" value={endYear} onChange={e => setEndYear(Number(e.target.value))} style={{ width: 70, borderRadius: 6, border: '1px solid #90caf9', padding: '0.2rem 0.5rem' }} />
-        </div>
+        <span style={{ fontWeight: 500, color: '#333', marginLeft: 8 }}>Custom Range:</span>
+        <input type="number" min="2010" max={endYear} value={startYear} onChange={e => setStartYear(Number(e.target.value))} style={{ width: 80 }} disabled={loading} />
+        <span>-</span>
+        <input type="number" min={startYear} max="2023" value={endYear} onChange={e => setEndYear(Number(e.target.value))} style={{ width: 80 }} disabled={loading} />
+        <button 
+          onClick={handleTimeframeChange}
+          className="responsive-button"
+          disabled={loading}
+        >
+          {loading ? 'Loading...' : 'Update Dashboard'}
+        </button>
       </div>
-
-      <button 
-        onClick={handleTimeframeChange}
-        className="responsive-button"
-        style={{ background: 'linear-gradient(45deg, #43e97b, #38f9d7)', margin: '1rem auto 2rem auto' }}
-        disabled={loading}
-      >
-        {loading ? 'Loading...' : 'Update Dashboard'}
-      </button>
 
       {error && (
         <div className="error">
@@ -248,54 +308,51 @@ const IndiaDashboard = () => {
       )}
 
       {/* India Overview */}
-      <div className="responsive-grid" style={{ margin: '2rem 0' }}>
-        {/* Happiness Index (Life Ladder) Widget */}
-        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', borderRadius: '10px', color: '#333' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>Happiness Index (Life Ladder)</h3>
-          <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>
-            {indiaStats && indiaStats.happinessScore != null ? indiaStats.happinessScore.toFixed(3) : <span style={{ color: 'red', fontSize: '1rem' }}>No data</span>}
-          </p>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>India, {endYear}</p>
+      <div className="responsive-grid" style={{ margin: '2rem 0', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center', alignItems: 'flex-start', width: '100%' }}>
+        {/* Multi-Line Chart for All Indicators vs Happiness */}
+        <div style={{ flex: '1 1 420px', minWidth: 340, maxWidth: 700, background: 'linear-gradient(135deg, #e0eafc 0%, #f8fafc 100%)', borderRadius: '10px', color: '#333', minHeight: 380, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0' }}>India: Happiness & Development Indicators</h3>
+          {indiaStats && indiaStats.happinessSeries && indiaStats.happinessSeries.length > 0 ? (
+            <div style={{ width: '100%', maxWidth: 640, height: 300 }}>
+              <Line {...getLineChartConfig(
+                'Indicators vs Happiness (India)',
+                [
+                  indiaStats.povertySeries && indiaStats.povertySeries.length > 0 ? createTrendDataset('Poverty Rate', indiaStats.povertySeries.map(d => d.value), CHART_COLORS.secondary, CHART_COLORS.secondaryBorder) : null,
+                  indiaStats.lifeExpSeries && indiaStats.lifeExpSeries.length > 0 ? createTrendDataset('Life Expectancy', indiaStats.lifeExpSeries.map(d => d.value), CHART_COLORS.success, CHART_COLORS.successBorder) : null,
+                  indiaStats.unempSeries && indiaStats.unempSeries.length > 0 ? createTrendDataset('Unemployment Rate', indiaStats.unempSeries.map(d => d.value), CHART_COLORS.warning, CHART_COLORS.warningBorder) : null,
+                  createTrendDataset('Life Ladder (Happiness)', indiaStats.happinessSeries.map(d => d.value), CHART_COLORS.primary, CHART_COLORS.primaryBorder)
+                ].filter(Boolean),
+                indiaStats.happinessSeries.map(d => d.year)
+              )} />
+            </div>
+          ) : (
+            <p style={{ color: 'red', fontSize: '1rem', margin: '2rem 0' }}>No data</p>
+          )}
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>India, {startYear}-{endYear}</p>
         </div>
-        {/* Poverty vs Happiness Widget */}
-        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', borderRadius: '10px', color: '#333' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>Poverty vs Happiness</h3>
-          <p style={{ margin: 0, fontSize: '1.1rem' }}>Correlation: <b>-0.7</b></p>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>Lower poverty, higher happiness</p>
-        </div>
-        {/* Life Expectancy vs Happiness Widget */}
-        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #b2fefa 0%, #e6e6fa 100%)', borderRadius: '10px', color: '#333' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>Life Expectancy vs Happiness</h3>
-          <p style={{ margin: 0, fontSize: '1.1rem' }}>Correlation: <b>+0.8</b></p>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>Longer life, higher happiness</p>
-        </div>
-        {/* Unemployment vs Happiness Widget */}
-        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #ffebee 0%, #e3f0ff 100%)', borderRadius: '10px', color: '#333' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>Unemployment vs Happiness</h3>
-          <p style={{ margin: 0, fontSize: '1.1rem' }}>Correlation: <b>-0.6</b></p>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>Higher unemployment, lower happiness</p>
+        {/* Correlation Bar Chart */}
+        <div style={{ flex: '1 1 340px', minWidth: 340, maxWidth: 480, background: 'linear-gradient(135deg, #f8fafc 0%, #e0eafc 100%)', borderRadius: '10px', color: '#333', minHeight: 380, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0' }}>Correlation with Happiness Index</h3>
+          <p style={{ margin: 0, fontSize: '0.95rem', color: '#555' }}>Indicators ranked by their correlation strength with India's happiness score</p>
+          {correlationData && correlationData.length > 0 ? (
+            <div style={{ width: '100%', maxWidth: 400, height: 300 }}>
+              {/* Use the correlation chart config from createCorrelationChart */}
+              <Bar {...getBarChartConfig(
+                'Indicators Correlation with Happiness Index (India)',
+                [createBarDataset(
+                  'Correlation Strength',
+                  correlationData.map(item => Math.abs(item.correlation)),
+                  correlationData.map(item => item.trend === 'positive' ? CHART_COLORS.success : CHART_COLORS.secondary)
+                )],
+                correlationData.map(item => item.indicator)
+              )} />
+            </div>
+          ) : (
+            <p style={{ color: 'red', fontSize: '1rem', margin: '2rem 0' }}>No correlation data</p>
+          )}
         </div>
       </div>
 
-      {/* Correlation Chart */}
-      <div className="chart-container">
-        <h3>Correlation with Happiness Index</h3>
-        <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
-          Indicators ranked by their correlation strength with India's happiness score
-        </p>
-        
-        {loading ? (
-          <div className="loading">Loading correlation analysis...</div>
-        ) : chartData ? (
-          <div style={{ height: '400px' }}>
-            <Bar {...chartData} />
-          </div>
-        ) : (
-          <p style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
-            📊 Correlation chart will be displayed here
-          </p>
-        )}
-      </div>
 
       {/* Correlation Analysis Details */}
       <div className="chart-container">
