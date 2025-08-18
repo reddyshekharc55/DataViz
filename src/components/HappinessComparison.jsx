@@ -532,12 +532,12 @@ const HappinessComparison = () => {
       `}</style>
       
       <h2 style={{ margin: 0, marginBottom: '0.25rem', fontSize: '1.4rem', color: '#2d3748' }}>
-        📈 {analysisMode === 'time-series' ? 'Happiness Indicator Analysis' : 'Multi-Country Correlation Analysis'}
+        📈 {analysisMode === 'time-series' ? 'Time Series: Indicator vs Happiness Trends' : 'Multi-Country Correlation Analysis'}
       </h2>
       <p style={{ margin: 0, marginBottom: '0.5rem', color: '#4a5568', fontSize: '0.85rem' }}>
         {analysisMode === 'time-series' 
-          ? 'Compare various indicators (GDP, poverty, unemployment) with happiness scores over time'
-          : 'Analyze correlations between poverty/unemployment indicators and happiness across countries'
+          ? 'Compare key indicators (GDP per capita, life expectancy, unemployment, emissions, education) with happiness scores over time'
+          : 'Analyze correlations between economic, social & environmental indicators and happiness across multiple countries'
         }
       </p>
       <div style={{
@@ -549,8 +549,8 @@ const HappinessComparison = () => {
         fontSize: '0.75rem',
         color: '#0066cc'
       }}>
-        <strong>📊 Data Sources:</strong> Happiness data from World Happiness Report 2024 dataset. World Bank indicators available for economic and social metrics. 
-        {analysisMode === 'correlation' && ' Correlation analysis requires at least 3 countries with complete data.'}
+        <strong>📊 Data Sources:</strong> Happiness data from World Happiness Report 2024 (2005-2023). World Bank indicators: GDP per capita, life expectancy, unemployment, greenhouse gas emissions, school enrollment. 
+        {analysisMode === 'correlation' && ' Enhanced multi-country selection with real-time data validation (minimum 3 countries required).'}
       </div>
 
       {/* Analysis Mode Toggle */}
@@ -667,7 +667,7 @@ const HappinessComparison = () => {
                 fontStyle: 'italic',
                 fontSize: '0.75rem' 
               }}>
-                No countries selected. Please select countries from the dropdown below.
+                No countries selected. Use the searchable dropdown below to select multiple countries for correlation analysis.
               </span>
             )}
           </div>
@@ -743,7 +743,14 @@ const HappinessComparison = () => {
                 <label>Start Year:</label>
                 <select
                   value={startYear}
-                  onChange={(e) => setStartYear(e.target.value)}
+                  onChange={(e) => {
+                    const newStartYear = e.target.value;
+                    setStartYear(newStartYear);
+                    // If end year is less than start year, update it
+                    if (parseInt(endYear) < parseInt(newStartYear)) {
+                      setEndYear(newStartYear);
+                    }
+                  }}
                   disabled={loading}
                 >
                   {availableTimeSeriesYears.map(year => (
@@ -759,7 +766,9 @@ const HappinessComparison = () => {
                   onChange={(e) => setEndYear(e.target.value)}
                   disabled={loading}
                 >
-                  {availableTimeSeriesYears.map(year => (
+                  {availableTimeSeriesYears
+                    .filter(year => year >= parseInt(startYear))
+                    .map(year => (
                     <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
@@ -971,7 +980,7 @@ const HappinessComparison = () => {
       {/* Chart Area */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <h3 style={{ margin: '0 0 0.4rem 0', fontSize: '1rem', color: '#2d3748' }}>
-          {analysisMode === 'time-series' ? 'Time Series Analysis' : 'Correlation Analysis'}
+          {analysisMode === 'time-series' ? 'Dual-Axis Time Series Visualization' : 'Correlation Scatter Plot Analysis'}
         </h3>
         {loading ? (
           <div style={{ 
@@ -1001,11 +1010,11 @@ const HappinessComparison = () => {
             color: '#718096',
             textAlign: 'center'
           }}>
-            <p>📊 Select parameters to {analysisMode === 'time-series' ? 'compare indicators and happiness over time' : 'analyze correlations across countries'}</p>
+            <p>📊 Select parameters to {analysisMode === 'time-series' ? 'compare indicator trends with happiness over time' : 'analyze cross-country correlations'}</p>
             <p style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>
               {analysisMode === 'time-series' 
-                ? 'Dual-axis chart will show indicator trends on the left axis and happiness scores on the right axis'
-                : 'Scatter plot will show correlation between selected indicator and happiness scores'
+                ? 'Interactive dual-axis chart with smart year filtering - indicator trends on left axis, happiness scores on right'
+                : 'Enhanced country selection with searchable dropdown, checkboxes, and real-time correlation calculation'
               }
             </p>
           </div>
