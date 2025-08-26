@@ -75,6 +75,9 @@ export const getLineChartConfig = (title, datasets, labels) => ({
       tooltip: {
         mode: 'index',
         intersect: false,
+      },
+      datalabels: {
+        display: false
       }
     },
     interaction: {

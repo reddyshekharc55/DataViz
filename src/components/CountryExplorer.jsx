@@ -1,10 +1,35 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Line } from 'react-chartjs-2'
 import { getWorldBankData, getCountries, INDICATORS } from '../services/apiService'
 import { getLineChartConfig, createTrendDataset, CHART_COLORS } from '../utils/chartConfig'
 
 const CountryExplorer = () => {
   const [selectedCountry, setSelectedCountry] = useState('USA')
+  const chartRef = useRef(null)
+  // Export chart as PNG image (robust for all react-chartjs-2 versions)
+  const exportChart = () => {
+    let chart = null;
+    if (chartRef.current) {
+      // Try v4+ (chartRef.current.chart) and v2/v3 (chartRef.current)
+      chart = chartRef.current.chart || chartRef.current;
+    }
+    if (chart && chart.toBase64Image) {
+      try {
+        const url = chart.toBase64Image();
+        const filename = `${selectedCountry}-${selectedIndicator}-trend.png`;
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        alert('Export failed');
+      }
+    } else {
+      alert('Chart instance not found. Export is not supported in this environment or Chart.js version.');
+    }
+  }
   const [selectedIndicator, setSelectedIndicator] = useState('NY.GDP.PCAP.CD')
   const [startYear, setStartYear] = useState('2015')
   const [endYear, setEndYear] = useState('2023')
@@ -177,16 +202,37 @@ const CountryExplorer = () => {
             ))}
           </select>
         </div>
-        <div className="form-group" style={{ minWidth: 100, flex: 1 }}>
+        <div className="form-group" style={{ minWidth: 100, flex: 1, display: 'flex', flexDirection: 'column' }}>
           <label>End Year:</label>
-          <select
-            value={endYear}
-            onChange={(e) => setEndYear(e.target.value)}
-          >
-            {Array.from({ length: 14 }, (_, i) => 2010 + i).map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}>
+            <select
+              value={endYear}
+              onChange={(e) => setEndYear(e.target.value)}
+            >
+              {Array.from({ length: 14 }, (_, i) => 2010 + i).map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+            {/* Export Button - now next to End Year */}
+            <button
+              className="export-btn"
+              onClick={exportChart}
+              disabled={!chartData || loading}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#0097a7',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                cursor: !chartData || loading ? 'not-allowed' : 'pointer',
+                fontWeight: 600,
+                transition: 'background 0.2s',
+                opacity: !chartData || loading ? 0.6 : 1
+              }}
+            >
+              📸 Export Chart
+            </button>
+          </div>
         </div>
       </div>
 
@@ -202,7 +248,7 @@ const CountryExplorer = () => {
           <div className="loading" style={{ color: '#4a5568' }}>Loading chart data...</div>
         ) : chartData ? (
           <div style={{ height: '100%', flex: 1, minHeight: 0 }}>
-            <Line {...chartData} />
+            <Line ref={chartRef} {...chartData} />
           </div>
         ) : (
           <p style={{ textAlign: 'center', padding: '2rem', color: '#718096', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -1,10 +1,79 @@
-import React, { useState, useEffect } from 'react'
+// Import Chart.js and datalabels plugin
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
+// Register Chart.js components and plugin
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartDataLabels
+);
+
+import React, { useState, useEffect, useRef } from 'react'
 import { Bar, Line } from 'react-chartjs-2'
 import { getIndiaCorrelationData, getWorldBankData, getHappinessData } from '../services/apiService'
 import Papa from 'papaparse'
 import { getBarChartConfig, createBarDataset, getLineChartConfig, createTrendDataset, CHART_COLORS } from '../utils/chartConfig'
 
+// Helper: get emoji for each year based on score change
+function getHappinessEmojis(series) {
+  if (!series || series.length === 0) return [];
+  let emojis = ["😊"];
+  for (let i = 1; i < series.length; i++) {
+    if (series[i].value > series[i-1].value + 0.01) {
+      emojis.push("😊");
+    } else if (series[i].value < series[i-1].value - 0.01) {
+      emojis.push("😢");
+    } else {
+      emojis.push("😐");
+    }
+  }
+  return emojis;
+}
+
 const IndiaDashboard = () => {
+  // Chart refs for export
+  const happinessTrendRef = useRef(null);
+  const indicatorsLineRef = useRef(null);
+  const correlationBarRef = useRef(null);
+
+  // Robust export function (Chart.js v2/v3/v4)
+  const exportChart = (ref, filename) => {
+    let chart = null;
+    if (ref.current) {
+      chart = ref.current.chart || ref.current;
+    }
+    if (chart && chart.toBase64Image) {
+      try {
+        const url = chart.toBase64Image();
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        alert('Export failed');
+      }
+    } else {
+      alert('Chart instance not found. Export is not supported in this environment or Chart.js version.');
+    }
+  };
+
   const [selectedTimeframe, setSelectedTimeframe] = useState('5years')
   const [startYear, setStartYear] = useState(2019)
   const [endYear, setEndYear] = useState(2023)
@@ -225,6 +294,152 @@ const IndiaDashboard = () => {
 
   return (
   <div style={{ maxHeight: '90vh', overflowY: 'auto', paddingRight: 8 }}>
+    {/* --- CONTROLS: TIMEFRAME & DROPDOWNS --- */}
+    <div style={{ marginTop: '2.5rem' }}>
+      <div className="ind-timeframe-row">
+          <style>{`
+            .form-group {
+              display: flex;
+              flex-direction: column;
+              gap: 0.4rem;
+            }
+            .form-group label {
+              font-weight: 600;
+              color: #2d3748;
+              margin-bottom: 0.2rem;
+            }
+            .form-group select, .form-group input[type='number'] {
+              padding: 0.5rem 1.2rem 0.5rem 0.7rem;
+              border: 1.5px solid #b3b3b3;
+              border-radius: 0.7rem;
+              background: #f8fafc;
+              font-size: 1.08rem;
+              color: #222;
+              transition: border 0.2s, box-shadow 0.2s;
+              outline: none;
+              box-shadow: 0 1px 4px 0 rgba(60,60,60,0.04);
+              width: auto;
+            }
+            .form-group select:focus, .form-group input[type='number']:focus {
+              border: 1.5px solid #3182ce;
+              box-shadow: 0 0 0 2px #90cdf4;
+            }
+            .form-group select:disabled, .form-group input[type='number']:disabled {
+              background: #e2e8f0;
+              color: #888;
+            }
+          `}</style>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: '1.2rem',
+            margin: '2.5rem 0 1.5rem 0',
+            alignItems: 'flex-end',
+            justifyContent: 'flex-start',
+          }}>
+            <div className="form-group" style={{ minWidth: 180, flex: 1 }}>
+              <label htmlFor="ind-timeframe-select">Select Timeframe:</label>
+              <select
+                id="ind-timeframe-select"
+                value={selectedTimeframe}
+                onChange={(e) => setSelectedTimeframe(e.target.value)}
+                disabled={loading}
+              >
+                {timeframes.map(timeframe => (
+                  <option key={timeframe.value} value={timeframe.value}>{timeframe.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group" style={{ minWidth: 110, flex: 1 }}>
+              <label>Start Year:</label>
+              <input
+                type="number"
+                min="2010"
+                max={endYear}
+                value={startYear}
+                onChange={e => setStartYear(Number(e.target.value))}
+                disabled={loading}
+              />
+            </div>
+            <div className="form-group" style={{ minWidth: 110, flex: 1 }}>
+              <label>End Year:</label>
+              <input
+                type="number"
+                min={startYear}
+                max="2023"
+                value={endYear}
+                onChange={e => setEndYear(Number(e.target.value))}
+                disabled={loading}
+              />
+            </div>
+            {/* <button 
+              onClick={handleTimeframeChange}
+              className="export-btn"
+              style={{ marginBottom: 0 }}
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : 'Update Dashboard'}
+            </button> */}
+            <button
+              className="export-btn"
+              onClick={() => exportChart(happinessTrendRef, `India-Happiness-Trend.png`)}
+              disabled={loading || !indiaStats || !indiaStats.happinessSeries || indiaStats.happinessSeries.length === 0}
+            >
+              📸 Export Happiness Trend Chart
+            </button>
+            <button
+              className="export-btn"
+              onClick={() => exportChart(indicatorsLineRef, `India-Development-Indicators.png`)}
+              disabled={loading || !indiaStats || !indiaStats.happinessSeries || indiaStats.happinessSeries.length === 0}
+            >
+              📸 Export Development Indicators Chart
+            </button>
+            <button
+              className="export-btn"
+              onClick={() => exportChart(correlationBarRef, `India-Correlation-Chart.png`)}
+              disabled={loading || !correlationData || correlationData.length === 0}
+            >
+              📸 Export Correlation Chart
+            </button>
+          </div>
+          {error && (
+            <div className="error" style={{ color: '#e53e3e', marginBottom: '1rem', backgroundColor: '#fed7d7', padding: '0.5rem', borderRadius: '4px', border: '1px solid #feb2b2' }}>
+              {error}
+            </div>
+          )}
+      </div>
+      {error && (
+        <div className="error">
+          {error}
+        </div>
+      )}
+    {/* Export buttons for each chart (styled like HappinessComparison) */}
+    <style>{`
+      .export-btn {
+        padding: 0.5rem 1rem;
+        background: #0097a7;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .export-btn:hover {
+        background: #00838f;
+      }
+      .export-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+    `}</style>
+    </div>
+
+    {/* --- SECTION 1: INDIAN HAPPINESS SCORE --- */}
+    <h2 style={{ textAlign: 'center', color: '#1a237e', fontWeight: 800, fontSize: '2rem', margin: '2.5rem 0 1.5rem 0', letterSpacing: 0.5 }}>Indian Happiness Score</h2>
       <style>{`
         .ind-timeframe-row {
           display: flex;
@@ -276,54 +491,145 @@ const IndiaDashboard = () => {
           margin: 0;
         }
       `}</style>
-      <div className="ind-timeframe-row">
-        <label htmlFor="ind-timeframe-select">Select Timeframe:</label>
-        <select
-          id="ind-timeframe-select"
-          value={selectedTimeframe}
-          onChange={(e) => setSelectedTimeframe(e.target.value)}
-          disabled={loading}
-        >
-          {timeframes.map(timeframe => (
-            <option key={timeframe.value} value={timeframe.value}>{timeframe.label}</option>
-          ))}
-        </select>
-        <span style={{ fontWeight: 500, color: '#333', marginLeft: 8 }}>Custom Range:</span>
-        <input type="number" min="2010" max={endYear} value={startYear} onChange={e => setStartYear(Number(e.target.value))} style={{ width: 80 }} disabled={loading} />
-        <span>-</span>
-        <input type="number" min={startYear} max="2023" value={endYear} onChange={e => setEndYear(Number(e.target.value))} style={{ width: 80 }} disabled={loading} />
-        <button 
-          onClick={handleTimeframeChange}
-          className="responsive-button"
-          disabled={loading}
-        >
-          {loading ? 'Loading...' : 'Update Dashboard'}
-        </button>
+
+
+
+      {/* Fun Happiness Trend Chart for India */}
+      <div style={{ margin: '2rem 0', background: 'linear-gradient(135deg, #e0eafc 0%, #f8fafc 100%)', borderRadius: '10px', boxShadow: '0 2px 12px 0 rgba(60,60,60,0.08)', padding: '1.5rem', maxWidth: 700, marginLeft: 'auto', marginRight: 'auto', color: '#333', fontFamily: 'inherit' }}>
+        <h3 style={{ textAlign: 'center', color: '#2d3748', fontWeight: 700, fontSize: '1.5rem', marginBottom: '1.2rem', letterSpacing: 0.5 }}>India: Happiness Trend <span role="img" aria-label="smile">🙂</span></h3>
+        {indiaStats && indiaStats.happinessSeries && indiaStats.happinessSeries.length > 0 ? (
+          <div style={{ width: '100%', maxWidth: 600, margin: '0 auto' }}>
+            <Line
+              ref={happinessTrendRef}
+              data={{
+                labels: indiaStats.happinessSeries.map(d => d.year),
+                datasets: [
+                  {
+                    label: 'Happiness Score',
+                    data: indiaStats.happinessSeries.map(d => d.value),
+                    borderColor: function(ctx) {
+                      // fallback for legend
+                      return '#ffb300';
+                    },
+                    backgroundColor: 'rgba(255,193,7,0.15)',
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#ffb300',
+                    pointRadius: 8,
+                    pointHoverRadius: 12,
+                    tension: 0.3,
+                    fill: true,
+                    datalabels: {
+                      display: true,
+                      align: 'top',
+                      font: { size: 24 },
+                      formatter: (value, context) => {
+                        const emojis = getHappinessEmojis(indiaStats.happinessSeries);
+                        return emojis[context.dataIndex] || '';
+                      }
+                    },
+                    segment: {
+                      borderColor: ctx => {
+                        const i = ctx.p0DataIndex;
+                        const data = ctx.chart.data.datasets[0].data;
+                        if (i === undefined || i === null || i === data.length - 1) return '#ffb300';
+                        if (data[i+1] > data[i]) return '#43e97b'; // green for increase
+                        if (data[i+1] < data[i]) return '#f5576c'; // red for decrease
+                        return '#ffb300'; // yellow for no change
+                      }
+                    }
+                  }
+                ]
+              }}
+              options={{
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    callbacks: {
+                      label: ctx => `Happiness: ${ctx.parsed.y.toFixed(3)}`
+                    }
+                  },
+                  datalabels: {
+                    display: true
+                  }
+                },
+                scales: {
+                  x: {
+                    title: { display: true, text: 'Year', font: { size: 14, family: 'inherit', weight: 600 } },
+                    ticks: { color: '#2d3748', font: { size: 13, family: 'inherit' } },
+                    grid: { color: 'rgba(44,62,80,0.07)' }
+                  },
+                  y: {
+                    title: { display: true, text: 'Happiness Score', font: { size: 14, family: 'inherit', weight: 600 } },
+                    min: 0, max: 10,
+                    ticks: { color: '#2d3748', font: { size: 13, family: 'inherit' } },
+                    grid: { color: 'rgba(44,62,80,0.07)' }
+                  }
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <p style={{ color: '#c62828', textAlign: 'center', fontSize: '1.1rem' }}>No happiness data available for India.</p>
+        )}
+        {/* Short description below the chart */}
+        {indiaStats && indiaStats.happinessSeries && indiaStats.happinessSeries.length > 1 && (
+          <div style={{ marginTop: '1.2rem', textAlign: 'center', fontSize: '1.08rem', color: '#4a5568', fontWeight: 500, fontFamily: 'inherit' }}>
+            {(() => {
+              const first = indiaStats.happinessSeries[0].value;
+              const last = indiaStats.happinessSeries[indiaStats.happinessSeries.length-1].value;
+              if (last > first + 0.05) return 'India is becoming happier! 😊';
+              if (last < first - 0.05) return 'Happiness has decreased in recent years. 😢';
+              return 'Happiness has remained fairly stable.';
+            })()}
+          </div>
+        )}
       </div>
-
-      {error && (
-        <div className="error">
-          {error}
-        </div>
-      )}
-
-      {/* India Overview */}
-      <div className="responsive-grid" style={{ margin: '2rem 0', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center', alignItems: 'flex-start', width: '100%' }}>
+  {/* --- SECTION 2: DETAILED ANALYSIS --- */}
+  <h2 style={{ textAlign: 'center', color: '#1a237e', fontWeight: 800, fontSize: '2rem', margin: '3.5rem 0 1.5rem 0', letterSpacing: 0.5 }}>Detailed Analysis</h2>
+  <div className="responsive-grid" style={{ margin: '2rem 0', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center', alignItems: 'flex-start', width: '100%' }}>
         {/* Multi-Line Chart for All Indicators vs Happiness */}
         <div style={{ flex: '1 1 420px', minWidth: 340, maxWidth: 700, background: 'linear-gradient(135deg, #e0eafc 0%, #f8fafc 100%)', borderRadius: '10px', color: '#333', minHeight: 380, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem' }}>
           <h3 style={{ margin: '0 0 0.5rem 0' }}>India: Happiness & Development Indicators</h3>
           {indiaStats && indiaStats.happinessSeries && indiaStats.happinessSeries.length > 0 ? (
             <div style={{ width: '100%', maxWidth: 640, height: 300 }}>
-              <Line {...getLineChartConfig(
-                'Indicators vs Happiness (India)',
-                [
-                  indiaStats.povertySeries && indiaStats.povertySeries.length > 0 ? createTrendDataset('Poverty Rate', indiaStats.povertySeries.map(d => d.value), CHART_COLORS.secondary, CHART_COLORS.secondaryBorder) : null,
-                  indiaStats.lifeExpSeries && indiaStats.lifeExpSeries.length > 0 ? createTrendDataset('Life Expectancy', indiaStats.lifeExpSeries.map(d => d.value), CHART_COLORS.success, CHART_COLORS.successBorder) : null,
-                  indiaStats.unempSeries && indiaStats.unempSeries.length > 0 ? createTrendDataset('Unemployment Rate', indiaStats.unempSeries.map(d => d.value), CHART_COLORS.warning, CHART_COLORS.warningBorder) : null,
-                  createTrendDataset('Life Ladder (Happiness)', indiaStats.happinessSeries.map(d => d.value), CHART_COLORS.primary, CHART_COLORS.primaryBorder)
-                ].filter(Boolean),
-                indiaStats.happinessSeries.map(d => d.year)
-              )} />
+              <Line
+                ref={indicatorsLineRef}
+                {...getLineChartConfig(
+                  'Indicators vs Happiness (India)',
+                  [
+                    indiaStats.povertySeries && indiaStats.povertySeries.length > 0 ? createTrendDataset('Poverty Rate', indiaStats.povertySeries.map(d => d.value), CHART_COLORS.secondary, CHART_COLORS.secondaryBorder) : null,
+                    indiaStats.lifeExpSeries && indiaStats.lifeExpSeries.length > 0 ? createTrendDataset('Life Expectancy', indiaStats.lifeExpSeries.map(d => d.value), CHART_COLORS.success, CHART_COLORS.successBorder) : null,
+                    indiaStats.unempSeries && indiaStats.unempSeries.length > 0 ? createTrendDataset('Unemployment Rate', indiaStats.unempSeries.map(d => d.value), CHART_COLORS.warning, CHART_COLORS.warningBorder) : null,
+                    createTrendDataset('Life Ladder (Happiness)', indiaStats.happinessSeries.map(d => d.value), CHART_COLORS.primary, CHART_COLORS.primaryBorder)
+                  ].filter(Boolean),
+                  indiaStats.happinessSeries.map(d => d.year)
+                )}
+                options={{
+                  ...getLineChartConfig(
+                    'Indicators vs Happiness (India)',
+                    [
+                      indiaStats.povertySeries && indiaStats.povertySeries.length > 0 ? createTrendDataset('Poverty Rate', indiaStats.povertySeries.map(d => d.value), CHART_COLORS.secondary, CHART_COLORS.secondaryBorder) : null,
+                      indiaStats.lifeExpSeries && indiaStats.lifeExpSeries.length > 0 ? createTrendDataset('Life Expectancy', indiaStats.lifeExpSeries.map(d => d.value), CHART_COLORS.success, CHART_COLORS.successBorder) : null,
+                      indiaStats.unempSeries && indiaStats.unempSeries.length > 0 ? createTrendDataset('Unemployment Rate', indiaStats.unempSeries.map(d => d.value), CHART_COLORS.warning, CHART_COLORS.warningBorder) : null,
+                      createTrendDataset('Life Ladder (Happiness)', indiaStats.happinessSeries.map(d => d.value), CHART_COLORS.primary, CHART_COLORS.primaryBorder)
+                    ].filter(Boolean),
+                    indiaStats.happinessSeries.map(d => d.year)
+                  ).options,
+                  plugins: {
+                    ...getLineChartConfig(
+                      'Indicators vs Happiness (India)',
+                      [
+                        indiaStats.povertySeries && indiaStats.povertySeries.length > 0 ? createTrendDataset('Poverty Rate', indiaStats.povertySeries.map(d => d.value), CHART_COLORS.secondary, CHART_COLORS.secondaryBorder) : null,
+                        indiaStats.lifeExpSeries && indiaStats.lifeExpSeries.length > 0 ? createTrendDataset('Life Expectancy', indiaStats.lifeExpSeries.map(d => d.value), CHART_COLORS.success, CHART_COLORS.successBorder) : null,
+                        indiaStats.unempSeries && indiaStats.unempSeries.length > 0 ? createTrendDataset('Unemployment Rate', indiaStats.unempSeries.map(d => d.value), CHART_COLORS.warning, CHART_COLORS.warningBorder) : null,
+                        createTrendDataset('Life Ladder (Happiness)', indiaStats.happinessSeries.map(d => d.value), CHART_COLORS.primary, CHART_COLORS.primaryBorder)
+                      ].filter(Boolean),
+                      indiaStats.happinessSeries.map(d => d.year)
+                    ).options.plugins,
+                    datalabels: { display: false }
+                  }
+                }}
+              />
             </div>
           ) : (
             <p style={{ color: 'red', fontSize: '1rem', margin: '2rem 0' }}>No data</p>
@@ -337,15 +643,41 @@ const IndiaDashboard = () => {
           {correlationData && correlationData.length > 0 ? (
             <div style={{ width: '100%', maxWidth: 400, height: 300 }}>
               {/* Use the correlation chart config from createCorrelationChart */}
-              <Bar {...getBarChartConfig(
-                'Indicators Correlation with Happiness Index (India)',
-                [createBarDataset(
-                  'Correlation Strength',
-                  correlationData.map(item => Math.abs(item.correlation)),
-                  correlationData.map(item => item.trend === 'positive' ? CHART_COLORS.success : CHART_COLORS.secondary)
-                )],
-                correlationData.map(item => item.indicator)
-              )} />
+              <Bar
+                ref={correlationBarRef}
+                {...getBarChartConfig(
+                  'Indicators Correlation with Happiness Index (India)',
+                  [createBarDataset(
+                    'Correlation Strength',
+                    correlationData.map(item => Math.abs(item.correlation)),
+                    correlationData.map(item => item.trend === 'positive' ? CHART_COLORS.success : CHART_COLORS.secondary)
+                  )],
+                  correlationData.map(item => item.indicator)
+                )}
+                options={{
+                  ...getBarChartConfig(
+                    'Indicators Correlation with Happiness Index (India)',
+                    [createBarDataset(
+                      'Correlation Strength',
+                      correlationData.map(item => Math.abs(item.correlation)),
+                      correlationData.map(item => item.trend === 'positive' ? CHART_COLORS.success : CHART_COLORS.secondary)
+                    )],
+                    correlationData.map(item => item.indicator)
+                  ).options,
+                  plugins: {
+                    ...getBarChartConfig(
+                      'Indicators Correlation with Happiness Index (India)',
+                      [createBarDataset(
+                        'Correlation Strength',
+                        correlationData.map(item => Math.abs(item.correlation)),
+                        correlationData.map(item => item.trend === 'positive' ? CHART_COLORS.success : CHART_COLORS.secondary)
+                      )],
+                      correlationData.map(item => item.indicator)
+                    ).options.plugins,
+                    datalabels: { display: false }
+                  }
+                }}
+              />
             </div>
           ) : (
             <p style={{ color: 'red', fontSize: '1rem', margin: '2rem 0' }}>No correlation data</p>

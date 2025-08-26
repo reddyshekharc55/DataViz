@@ -256,6 +256,9 @@ const HappinessComparison = () => {
                   return label;
                 }
               }
+            },
+            datalabels: {
+              display: false
             }
           },
           scales: {
@@ -377,6 +380,9 @@ const HappinessComparison = () => {
                 ]
               }
             }
+          },
+          datalabels: {
+            display: false
           }
         },
         scales: {
