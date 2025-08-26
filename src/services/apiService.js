@@ -853,3 +853,187 @@ export const calculateCorrelation = (x, y) => {
   
   return denominator === 0 ? 0 : numerator / denominator
 }
+
+// Import regional mapping utilities
+import { getRegionForCountry, getCountriesInRegion, getAllRegions, WORLD_BANK_REGIONS } from '../utils/regionMapping'
+
+// Get aggregated happiness data by region for a specific year
+export const getRegionalHappinessData = async (year = 2022) => {
+  try {
+    const allData = await loadHappinessDataFromCSV()
+    
+    // Filter data for the specified year
+    const yearData = allData.filter(row => 
+      row.year === year && 
+      !isNaN(row['Life Ladder']) &&
+      row['Country Code']
+    )
+    
+    // Group countries by region
+    const regionData = {}
+    
+    yearData.forEach(row => {
+      const countryCode = row['Country Code']
+      const region = getRegionForCountry(countryCode)
+      const happiness = row['Life Ladder']
+      
+      if (region !== 'Unknown Region' && !isNaN(happiness)) {
+        if (!regionData[region]) {
+          regionData[region] = {
+            region,
+            countries: [],
+            happinessScores: [],
+            totalCountries: 0,
+            averageHappiness: 0,
+            minHappiness: Infinity,
+            maxHappiness: -Infinity
+          }
+        }
+        
+        regionData[region].countries.push({
+          code: countryCode,
+          name: row['Country name'],
+          happiness: happiness
+        })
+        regionData[region].happinessScores.push(happiness)
+      }
+    })
+    
+    // Calculate aggregated statistics for each region
+    Object.keys(regionData).forEach(region => {
+      const data = regionData[region]
+      const scores = data.happinessScores
+      
+      if (scores.length > 0) {
+        data.totalCountries = scores.length
+        data.averageHappiness = scores.reduce((sum, score) => sum + score, 0) / scores.length
+        data.minHappiness = Math.min(...scores)
+        data.maxHappiness = Math.max(...scores)
+        
+        // Sort countries by happiness score (descending)
+        data.countries.sort((a, b) => b.happiness - a.happiness)
+      }
+    })
+    
+    // Convert to array and add region metadata
+    const result = Object.values(regionData).map(data => {
+      const regionInfo = WORLD_BANK_REGIONS.find(r => r.name === data.region)
+      return {
+        ...data,
+        emoji: regionInfo?.emoji || '🌍',
+        color: regionInfo?.color || '#666666',
+        lightColor: regionInfo?.lightColor || '#f0f0f0',
+        description: regionInfo?.description || ''
+      }
+    })
+    
+    // Sort by average happiness (descending)
+    result.sort((a, b) => b.averageHappiness - a.averageHappiness)
+    
+    return result
+  } catch (error) {
+    console.error('Error fetching regional happiness data:', error)
+    return []
+  }
+}
+
+// Get regional data formatted for RegionalVisualization component
+export const getRegionalData = async (year = 2023) => {
+  try {
+    const regionalHappinessData = await getRegionalHappinessData(parseInt(year))
+    
+    // Convert to the format expected by RegionalVisualization
+    const regionalData = {}
+    
+    regionalHappinessData.forEach(region => {
+      // Convert region name to the format expected by RegionalVisualization
+      const regionKey = region.region.toLowerCase().replace(/\s+/g, '_').replace(/&/g, 'and')
+      
+      regionalData[regionKey] = {
+        averageScore: region.averageHappiness,
+        countries: region.totalCountries,
+        region: region.region,
+        emoji: region.emoji,
+        color: region.color
+      }
+    })
+    
+    return regionalData
+  } catch (error) {
+    console.error('Error fetching regional data:', error)
+    return {}
+  }
+}
+
+// Get happiness trend data for a specific region across multiple years
+export const getRegionalHappinessTrend = async (regionName, startYear = 2015, endYear = 2023) => {
+  try {
+    const allData = await loadHappinessDataFromCSV()
+    const countriesInRegion = getCountriesInRegion(regionName)
+    
+    const trendData = []
+    
+    for (let year = startYear; year <= endYear; year++) {
+      const yearData = allData.filter(row => 
+        row.year === year && 
+        countriesInRegion.includes(row['Country Code']) &&
+        !isNaN(row['Life Ladder'])
+      )
+      
+      if (yearData.length > 0) {
+        const happinessScores = yearData.map(row => row['Life Ladder'])
+        const averageHappiness = happinessScores.reduce((sum, score) => sum + score, 0) / happinessScores.length
+        
+        trendData.push({
+          year,
+          averageHappiness,
+          countryCount: yearData.length,
+          countries: yearData.map(row => ({
+            code: row['Country Code'],
+            name: row['Country name'],
+            happiness: row['Life Ladder']
+          }))
+        })
+      }
+    }
+    
+    return trendData
+  } catch (error) {
+    console.error('Error fetching regional happiness trend:', error)
+    return []
+  }
+}
+
+// Get available years with regional happiness data
+export const getAvailableRegionalYears = async () => {
+  try {
+    const allData = await loadHappinessDataFromCSV()
+    
+    // Count valid data points per year
+    const yearCounts = {}
+    
+    allData.forEach(row => {
+      const year = row.year
+      const countryCode = row['Country Code']
+      const happiness = row['Life Ladder']
+      const region = getRegionForCountry(countryCode)
+      
+      if (year && !isNaN(happiness) && region !== 'Unknown Region') {
+        yearCounts[year] = (yearCounts[year] || 0) + 1
+      }
+    })
+    
+    // Return years with at least 50 countries (reasonable coverage)
+    const minCountries = 50
+    const availableYears = Object.entries(yearCounts)
+      .filter(([year, count]) => count >= minCountries)
+      .map(([year, count]) => parseInt(year))
+      .sort((a, b) => b - a) // Most recent first
+    
+    console.log('Available regional years:', availableYears)
+    return availableYears
+  } catch (error) {
+    console.error('Error getting available regional years:', error)
+    return [2022, 2021, 2020, 2019, 2018] // Fallback
+  }
+}

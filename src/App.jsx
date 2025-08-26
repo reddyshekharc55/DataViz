@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import './App.css';
-import RegionList from './RegionList';
+import RegionalAnalysis from './components/RegionalAnalysis';
 import CountryExplorer from './components/CountryExplorer';
 import Dashboard from './components/Dashboard';
 import BitsLogo from './components/BitsLogo';
 import HappinessComparison from './components/HappinessComparison';
 import IndiaDashboard from './components/IndianDashboard';
+import RegionalVisualization from './components/RegionalVisualization';
 
 
 function App() {
@@ -26,7 +27,10 @@ function App() {
       mainContent = <CountryExplorer />;
       break;
     case 'regional-view':
-      mainContent = <RegionList onRegionSelect={handleRegionSelect} />;
+      mainContent = <RegionalAnalysis onRegionSelect={handleRegionSelect} />;
+      break;
+    case 'regional-comparison':
+      mainContent = <RegionalVisualization />;
       break;
     case 'happiness':
       mainContent = <HappinessComparison />;
@@ -68,9 +72,14 @@ function App() {
             style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: page === 'regional-view' ? '#0097a7' : '#fff', color: page === 'regional-view' ? '#fff' : '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
             onClick={() => setPage('regional-view')}
           >
-            Regional View
+            Regional Analysis
           </button>
-          <button style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: '#fff', color: '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}>Regional Comparison</button>
+          <button 
+            style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: page === 'regional-comparison' ? '#0097a7' : '#fff', color: page === 'regional-comparison' ? '#fff' : '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
+            onClick={() => setPage('regional-comparison')}
+          >
+            Regional Comparison
+          </button>
           <button 
             style={{ minWidth: 60, padding: '0.5rem 0.7rem', borderRadius: 8, border: '1.5px solid #0097a7', background: page === 'india-dashboard' ? '#0097a7' : '#fff', color: page === 'india-dashboard' ? '#fff' : '#005662', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 8px #0001', flexShrink: 1 }}
             onClick={() => setPage('india-dashboard')}

@@ -546,18 +546,6 @@ const HappinessComparison = () => {
           : 'Analyze correlations between economic, social & environmental indicators and happiness across multiple countries'
         }
       </p>
-      <div style={{
-        marginBottom: '0.75rem',
-        padding: '0.4rem',
-        backgroundColor: '#e7f3ff',
-        borderRadius: 4,
-        border: '1px solid #b3d9ff',
-        fontSize: '0.75rem',
-        color: '#0066cc'
-      }}>
-        <strong>📊 Data Sources:</strong> Happiness data from World Happiness Report 2024 (2005-2023). World Bank indicators: GDP per capita, life expectancy, unemployment, greenhouse gas emissions, school enrollment. 
-        {analysisMode === 'correlation' && ' Enhanced multi-country selection with real-time data validation (minimum 3 countries required).'}
-      </div>
 
       {/* Analysis Mode Toggle */}
       <div style={{ marginBottom: '1rem' }}>

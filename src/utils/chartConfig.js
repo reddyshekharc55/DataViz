@@ -172,3 +172,49 @@ export const createBarDataset = (label, data, backgroundColor = CHART_COLORS.gra
   borderColor: backgroundColor.map(color => color.replace('0.8', '1')),
   borderWidth: 1
 })
+
+// Generate color palette for multiple items
+export const generateColorPalette = (count) => {
+  const colors = [...CHART_COLORS.gradient]
+  const palette = []
+  
+  for (let i = 0; i < count; i++) {
+    palette.push(colors[i % colors.length])
+  }
+  
+  return palette
+}
+
+// Get doughnut chart configuration
+export const getDoughnutChartConfig = (title, data, labels) => ({
+  data: {
+    labels,
+    datasets: [{
+      data,
+      backgroundColor: generateColorPalette(data.length),
+      borderColor: generateColorPalette(data.length).map(color => color.replace('0.8', '1')),
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: {
+        display: true,
+        text: title,
+        font: {
+          size: 16,
+          weight: 'bold'
+        }
+      },
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 20,
+          usePointStyle: true
+        }
+      }
+    }
+  }
+})
