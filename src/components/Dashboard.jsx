@@ -16,7 +16,7 @@ const pages = [
   },
   {
     title: 'Regional Analysis',
-    description: 'View happiness and development indicators by region.',
+    description: 'Visualize happiness distribution across regions of the world.',
     page: 'regional-view',
     emoji: '🗺️'
   },

@@ -28,6 +28,7 @@ import { Bar, Line } from 'react-chartjs-2'
 import { getIndiaCorrelationData, getWorldBankData, getHappinessData } from '../services/apiService'
 import Papa from 'papaparse'
 import { getBarChartConfig, createBarDataset, getLineChartConfig, createTrendDataset, CHART_COLORS } from '../utils/chartConfig'
+import indiaMap from '../assets/india_map.png'
 
 // Helper: get emoji for each year based on score change
 function getHappinessEmojis(series) {
@@ -413,7 +414,8 @@ const IndiaDashboard = () => {
       `}</style>
       
       <h2 style={{ margin: 0, marginBottom: '0.25rem', fontSize: '1.4rem', color: '#2d3748' }}>
-        🇮🇳 India Happiness Dashboard {loading && <span style={{ fontSize: '1rem', color: '#3182ce' }}>⏳</span>}
+        <img src={indiaMap} alt="India Map" style={{ width: 24, height: 24, objectFit: 'contain', verticalAlign: 'middle', marginRight: '0.5rem', filter: 'drop-shadow(0 2px 4px #1976d233)' }} />
+        India Happiness Dashboard {loading && <span style={{ fontSize: '1rem', color: '#3182ce' }}>⏳</span>}
       </h2>
       <p style={{ margin: 0, marginBottom: '1rem', color: '#4a5568', fontSize: '0.85rem' }}>
         View indicators that most strongly correlate (positively or negatively) with the happiness index
