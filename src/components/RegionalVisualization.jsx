@@ -82,11 +82,19 @@ const RegionalVisualization = () => {
         createCharts(data)
       } else {
         // Filter data for selected region
-        const regionKey = selectedRegion.replace('_', ' ')
         const filteredData = {}
-        if (data[regionKey]) {
-          filteredData[regionKey] = data[regionKey]
+        if (data[selectedRegion]) {
+          filteredData[selectedRegion] = data[selectedRegion]
           createCharts(filteredData)
+        } else {
+          // fallback: try matching with spaces (for legacy data)
+          const regionKeyWithSpaces = selectedRegion.replace(/_/g, ' ');
+          if (data[regionKeyWithSpaces]) {
+            filteredData[regionKeyWithSpaces] = data[regionKeyWithSpaces];
+            createCharts(filteredData);
+          } else {
+            setError('Selected region data not found.');
+          }
         }
       }
     } catch (err) {
@@ -124,17 +132,7 @@ const RegionalVisualization = () => {
           </select>
         </div>
 
-        <div className="form-group">
-          <label>Focus on Region:</label>
-          <select 
-            value={selectedRegion} 
-            onChange={(e) => setSelectedRegion(e.target.value)}
-          >
-            {regions.map(region => (
-              <option key={region.value} value={region.value}>{region.label}</option>
-            ))}
-          </select>
-        </div>
+        
       </div>
 
       <button 
