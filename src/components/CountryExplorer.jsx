@@ -154,16 +154,20 @@ const CountryExplorer = () => {
           color: #888;
         }
       `}</style>
-      <h2 style={{ margin: 0, marginBottom: '0.5rem', color: '#2d3748', fontSize: '1.5rem' }}>🌍 Country Explorer</h2>
-      <p style={{ margin: 0, marginBottom: '1.5rem', color: '#4a5568' }}>Explore indicator trends for a selected country over a chosen time period</p>
+      <h2 style={{ margin: 0, marginBottom: '0.25rem', fontSize: '1.4rem', color: '#2d3748' }}>
+        🌍 Country Explorer
+      </h2>
+      <p style={{ margin: 0, marginBottom: '0.5rem', color: '#4a5568', fontSize: '0.85rem' }}>
+        Explore indicator trends for a selected country over a chosen time period
+      </p>
 
-      {/* Responsive horizontal dropdowns */}
+      {/* Controls */}
       <div style={{
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: '1.2rem',
-        margin: '1.5rem 0 2rem 0',
+        gap: '1rem',
+        margin: '1rem 0',
         alignItems: 'flex-end',
         justifyContent: 'flex-start',
       }}>

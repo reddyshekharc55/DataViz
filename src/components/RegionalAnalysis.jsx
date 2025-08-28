@@ -374,66 +374,86 @@ export default function RegionalAnalysis({ onRegionSelect }) {
       background: '#ffffff',
       color: '#333'
     }}>
-      <div style={{
-        textAlign: 'center',
-        marginBottom: '0.75rem'
+      <style>{`
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+        }
+        .form-group label {
+          font-weight: 600;
+          color: #2d3748;
+          margin-bottom: 0.2rem;
+        }
+        .form-group select {
+          padding: 0.5rem 1.2rem 0.5rem 0.7rem;
+          border: 1.5px solid #b3b3b3;
+          border-radius: 0.7rem;
+          background: #f8fafc;
+          font-size: 1.08rem;
+          color: #222;
+          transition: border 0.2s, box-shadow 0.2s;
+          outline: none;
+          box-shadow: 0 1px 4px 0 rgba(60,60,60,0.04);
+        }
+        .form-group select:focus {
+          border: 1.5px solid #3182ce;
+          box-shadow: 0 0 0 2px #90cdf4;
+        }
+        .form-group select:disabled {
+          background: #e2e8f0;
+          color: #888;
+        }
+      `}</style>
+      <h2 style={{ 
+        margin: '0 0 0.25rem 0', 
+        fontSize: '1.4rem',
+        fontWeight: 700,
+        color: '#2d3748'
       }}>
-        <h3 style={{ 
-          margin: '0 0 0.25rem 0', 
-          fontSize: '1.5rem',
-          fontWeight: 700,
-          color: '#2d3748'
-        }}>
-          🗺️ Regional Happiness Analysis
-        </h3>
-        <p style={{ 
-          margin: '0 auto', 
-          fontSize: '0.85rem',
-          color: '#4a5568',
-          maxWidth: '600px'
-        }}>
-          Analyze aggregated happiness scores and trends across global regions
-        </p>
-      </div>
+        🗺️ Regional Happiness Analysis
+      </h2>
+      <p style={{ 
+        margin: '0 0 0.5rem 0', 
+        fontSize: '0.85rem',
+        color: '#4a5568'
+      }}>
+        Analyze aggregated happiness scores and trends across global regions
+      </p>
 
-      {/* View Mode Controls */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '0.4rem',
-        marginBottom: '0.75rem',
-        flexWrap: 'wrap'
-      }}>
-        <button
-          onClick={() => setViewMode('happiness-aggregated')}
-          style={{
-            padding: '0.4rem 0.8rem',
-            border: '2px solid #0097a7',
-            borderRadius: '6px',
-            background: viewMode === 'happiness-aggregated' ? '#0097a7' : '#fff',
-            color: viewMode === 'happiness-aggregated' ? '#fff' : '#0097a7',
-            fontWeight: '600',
-            cursor: 'pointer',
-            fontSize: '0.85rem'
-          }}
-        >
-          📊 Aggregated Happiness
-        </button>
-        <button
-          onClick={() => setViewMode('happiness-trend')}
-          style={{
-            padding: '0.4rem 0.8rem',
-            border: '2px solid #0097a7',
-            borderRadius: '6px',
-            background: viewMode === 'happiness-trend' ? '#0097a7' : '#fff',
-            color: viewMode === 'happiness-trend' ? '#fff' : '#0097a7',
-            fontWeight: '600',
-            cursor: 'pointer',
-            fontSize: '0.85rem'
-          }}
-        >
-          📈 Happiness Trends
-        </button>
+      {/* View Mode Toggle */}
+      <div style={{ marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#4a5568' }}>View Mode:</span>
+          <button
+            onClick={() => setViewMode('happiness-aggregated')}
+            style={{
+              padding: '0.4rem 0.8rem',
+              borderRadius: 4,
+              border: '1px solid #cbd5e0',
+              backgroundColor: viewMode === 'happiness-aggregated' ? '#3182ce' : '#ffffff',
+              color: viewMode === 'happiness-aggregated' ? '#ffffff' : '#4a5568',
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            📊 Aggregated Happiness
+          </button>
+          <button
+            onClick={() => setViewMode('happiness-trend')}
+            style={{
+              padding: '0.4rem 0.8rem',
+              borderRadius: 4,
+              border: '1px solid #cbd5e0',
+              backgroundColor: viewMode === 'happiness-trend' ? '#3182ce' : '#ffffff',
+              color: viewMode === 'happiness-trend' ? '#ffffff' : '#4a5568',
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            📈 Happiness Trends
+          </button>
+        </div>
       </div>
 
       {/* Conditional Content Based on View Mode */}
@@ -441,42 +461,31 @@ export default function RegionalAnalysis({ onRegionSelect }) {
       {/* Happiness Aggregated View */}
       {viewMode === 'happiness-aggregated' && (
         <>
-          {/* Controls for Aggregated View */}
+          {/* Controls */}
           <div style={{
             display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
             gap: '0.75rem',
-            marginBottom: '0.75rem',
-            padding: '0.5rem',
-            background: '#e0f7fa',
-            borderRadius: '6px',
-            border: '1px solid #0097a7',
-            flexWrap: 'wrap'
+            margin: '0 0 0.5rem 0',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
           }}>
-            <label style={{ fontWeight: '600', color: '#0097a7', minWidth: '60px', fontSize: '0.9rem' }}>
-              Year:
-            </label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              style={{
-                padding: '0.4rem 0.6rem',
-                border: '2px solid #0097a7',
-                borderRadius: '5px',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                background: '#fff',
-                color: '#0097a7',
-                cursor: 'pointer',
-                outline: 'none',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              {availableYears.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              
+              <div className="form-group" style={{ minWidth: 130, flex: 1 }}>
+                <label>Select Year:</label>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  disabled={loading}
+                >
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           {/* Error Display */}
@@ -567,102 +576,91 @@ export default function RegionalAnalysis({ onRegionSelect }) {
       {/* Happiness Trend View */}
       {viewMode === 'happiness-trend' && (
         <>
-          {/* Controls for Trend View */}
+          {/* Controls */}
           <div style={{
             display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-            marginBottom: '0.75rem',
-            padding: '0.5rem',
-            background: '#e0f7fa',
-            borderRadius: '6px',
-            border: '1px solid #0097a7'
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            margin: '0 0 0.5rem 0',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <label style={{ fontWeight: '600', color: '#0097a7', minWidth: '60px', fontSize: '0.9rem' }}>
-                Years:
-              </label>
-              <select
-                value={startYear}
-                onChange={(e) => {
-                  const newStartYear = parseInt(e.target.value);
-                  setStartYear(newStartYear);
-                  // If end year is less than start year, update it
-                  if (endYear < newStartYear) {
-                    setEndYear(newStartYear);
-                  }
-                }}
-                style={{
-                  padding: '0.4rem 0.6rem',
-                  border: '2px solid #0097a7',
-                  borderRadius: '5px',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  background: '#fff',
-                  color: '#0097a7',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {availableYears.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-              <span style={{ color: '#0097a7', fontWeight: '600', fontSize: '0.85rem' }}>to</span>
-              <select
-                value={endYear}
-                onChange={(e) => setEndYear(parseInt(e.target.value))}
-                style={{
-                  padding: '0.4rem 0.6rem',
-                  border: '2px solid #0097a7',
-                  borderRadius: '5px',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  background: '#fff',
-                  color: '#0097a7',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {availableYears
-                  .filter(year => year >= startYear)
-                  .map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Region Selection */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <label style={{ fontWeight: '600', color: '#0097a7', minWidth: '60px', marginTop: '0.2rem', fontSize: '0.9rem' }}>
-                Regions:
-              </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', flex: 1 }}>
-                {WORLD_BANK_REGIONS.map(region => (
-                  <button
-                    key={region.name}
-                    onClick={() => handleRegionToggleForTrend(region.name)}
-                    style={{
-                      padding: '0.3rem 0.6rem',
-                      border: '2px solid',
-                      borderColor: selectedRegionsForTrend.includes(region.name) ? region.color : '#e2e8f0',
-                      borderRadius: '5px',
-                      background: selectedRegionsForTrend.includes(region.name) ? region.lightColor : '#fff',
-                      color: selectedRegionsForTrend.includes(region.name) ? region.color : '#4a5568',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.25rem'
-                    }}
-                  >
-                    {region.emoji} {region.name}
-                  </button>
-                ))}
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              
+              <div className="form-group" style={{ minWidth: 130, flex: 1 }}>
+                <label>Start Year:</label>
+                <select
+                  value={startYear}
+                  onChange={(e) => {
+                    const newStartYear = parseInt(e.target.value);
+                    setStartYear(newStartYear);
+                    // If end year is less than start year, update it
+                    if (endYear < newStartYear) {
+                      setEndYear(newStartYear);
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
               </div>
+              
+              <div className="form-group" style={{ minWidth: 130, flex: 1 }}>
+                <label>End Year:</label>
+                <select
+                  value={endYear}
+                  onChange={(e) => setEndYear(parseInt(e.target.value))}
+                  disabled={loading}
+                >
+                  {availableYears
+                    .filter(year => year >= startYear)
+                    .map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Region Selection */}
+          <div style={{
+            marginBottom: '1rem',
+            padding: '0.75rem',
+            background: '#f8fafc',
+            borderRadius: '0.7rem',
+            border: '1px solid #e2e8f0'
+          }}>
+            <label style={{ 
+              fontWeight: '600', 
+              color: '#2d3748', 
+              marginBottom: '0.5rem', 
+              display: 'block',
+              fontSize: '0.9rem'
+            }}>
+              Select Regions:
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {WORLD_BANK_REGIONS.map(region => (
+                <button
+                  key={region.name}
+                  onClick={() => handleRegionToggleForTrend(region.name)}
+                  style={{
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: 4,
+                    border: '1px solid #cbd5e0',
+                    backgroundColor: selectedRegionsForTrend.includes(region.name) ? '#3182ce' : '#ffffff',
+                    color: selectedRegionsForTrend.includes(region.name) ? '#ffffff' : '#4a5568',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {region.emoji} {region.name}
+                </button>
+              ))}
             </div>
           </div>
 
