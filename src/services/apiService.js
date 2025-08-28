@@ -855,6 +855,47 @@ export const calculateCorrelation = (x, y) => {
 }
 
 // Import regional mapping utilities
+// Get regional comparison data using CSV indicators only (fast performance)
+export const getRegionalComparisonData = async (regionName, indicatorField, year) => {
+  try {
+    const allData = await loadHappinessDataFromCSV()
+    const countriesInRegion = getCountriesInRegion(regionName)
+    
+    // Filter data for the specified region, year, and valid indicator values
+    const regionData = allData.filter(row => 
+      countriesInRegion.includes(row['Country Code']) &&
+      row.year === year &&
+      !isNaN(row[indicatorField]) &&
+      !isNaN(row['Life Ladder'])
+    )
+    
+    // Transform data for the component
+    return regionData.map(row => ({
+      countryCode: row['Country Code'],
+      countryName: row['Country name'],
+      happiness: row['Life Ladder'],
+      indicator: row[indicatorField],
+      year: row.year
+    })).sort((a, b) => b.indicator - a.indicator) // Sort by indicator value descending
+    
+  } catch (error) {
+    console.error('Error fetching regional comparison data:', error)
+    return []
+  }
+}
+
+// CSV Indicators available for regional comparison
+export const CSV_INDICATORS = [
+  { value: 'Log GDP per capita', label: 'GDP per Capita (Log)', description: 'Economic prosperity measure' },
+  { value: 'Social support', label: 'Social Support', description: 'Having someone to count on' },
+  { value: 'Healthy life expectancy at birth', label: 'Life Expectancy', description: 'Years of healthy life expected' },
+  { value: 'Freedom to make life choices', label: 'Freedom of Choice', description: 'Personal autonomy and freedom' },
+  { value: 'Generosity', label: 'Generosity', description: 'Charitable giving behavior' },
+  { value: 'Perceptions of corruption', label: 'Corruption Perception', description: 'Trust in government (lower is better)' },
+  { value: 'Positive affect', label: 'Positive Emotions', description: 'Joy, gratitude, serenity, etc.' },
+  { value: 'Negative affect', label: 'Negative Emotions', description: 'Worry, sadness, anger, etc. (lower is better)' }
+]
+
 import { getRegionForCountry, getCountriesInRegion, getAllRegions, WORLD_BANK_REGIONS } from '../utils/regionMapping'
 
 // Get aggregated happiness data by region for a specific year
