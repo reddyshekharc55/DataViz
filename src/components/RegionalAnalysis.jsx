@@ -99,6 +99,29 @@ export default function RegionalAnalysis({ onRegionSelect }) {
   const [error, setError] = useState('');
   const chartRef = useRef(null);
 
+  // Export chart function (Chart.js v2/v3/v4)
+  const exportChart = (filename) => {
+    let chart = null;
+    if (chartRef.current) {
+      chart = chartRef.current.chart || chartRef.current;
+    }
+    if (chart && chart.toBase64Image) {
+      try {
+        const url = chart.toBase64Image();
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        alert('Export failed. Please try again.');
+      }
+    } else {
+      alert('Chart instance not found. Export is not supported in this environment or Chart.js version.');
+    }
+  };
+
   // Load available years on component mount
   useEffect(() => {
     const loadAvailableYears = async () => {
@@ -497,6 +520,43 @@ export default function RegionalAnalysis({ onRegionSelect }) {
               )
             )}
           </div>
+          
+          {/* Export Button for Aggregated View */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            marginTop: '1rem',
+            marginBottom: '1rem'
+          }}>
+            <button
+              className="export-btn"
+              onClick={() => exportChart(`Regional-Happiness-Aggregated-${selectedYear}.png`)}
+              disabled={loading || !getAggregatedChartData()}
+              style={{
+                padding: '0.5rem 1rem',
+                background: loading || !getAggregatedChartData() ? '#ccc' : '#0097a7',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: loading || !getAggregatedChartData() ? 'not-allowed' : 'pointer',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && getAggregatedChartData()) {
+                  e.target.style.background = '#00838f';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && getAggregatedChartData()) {
+                  e.target.style.background = '#0097a7';
+                }
+              }}
+            >
+              📸 Export Regional Happiness Chart
+            </button>
+          </div>
         </>
       )}
 
@@ -646,6 +706,43 @@ export default function RegionalAnalysis({ onRegionSelect }) {
                 />
               )
             )}
+          </div>
+          
+          {/* Export Button for Trend View */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            marginTop: '1rem',
+            marginBottom: '1rem'
+          }}>
+            <button
+              className="export-btn"
+              onClick={() => exportChart(`Regional-Happiness-Trends-${startYear}-${endYear}.png`)}
+              disabled={loading || !getTrendChartData()}
+              style={{
+                padding: '0.5rem 1rem',
+                background: loading || !getTrendChartData() ? '#ccc' : '#0097a7',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: loading || !getTrendChartData() ? 'not-allowed' : 'pointer',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && getTrendChartData()) {
+                  e.target.style.background = '#00838f';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && getTrendChartData()) {
+                  e.target.style.background = '#0097a7';
+                }
+              }}
+            >
+              📸 Export Regional Happiness Trends Chart
+            </button>
           </div>
         </>
       )}
