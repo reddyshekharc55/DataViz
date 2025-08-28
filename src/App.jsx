@@ -21,7 +21,7 @@ function App() {
   let mainContent;
   switch (page) {
     case 'dashboard':
-      mainContent = <Dashboard />;
+      mainContent = <Dashboard setPage={setPage} />;
       break;
     case 'country-explorer':
       mainContent = <CountryExplorer />;

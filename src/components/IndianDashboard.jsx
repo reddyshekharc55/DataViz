@@ -293,9 +293,48 @@ const IndiaDashboard = () => {
 
 
   return (
-  <div style={{ maxHeight: '90vh', overflowY: 'auto', paddingRight: 8 }}>
-    {/* --- CONTROLS: TIMEFRAME & DROPDOWNS --- */}
-    <div style={{ marginTop: '2.5rem' }}>
+    <div className="card" style={{
+      height: '100%',
+      maxHeight: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      boxSizing: 'border-box',
+      padding: '1.5rem',
+      overflow: 'hidden',
+      background: '#ffffff',
+      color: '#333'
+    }}>
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '2rem'
+      }}>
+        <h2 style={{ 
+          margin: 0, 
+          marginBottom: '0.5rem', 
+          fontSize: '2rem',
+          fontWeight: 700,
+          color: '#2d3748'
+        }}>
+          🇮🇳 India Happiness Dashboard
+        </h2>
+        <p style={{ 
+          margin: '0 auto', 
+          fontSize: '1rem',
+          color: '#4a5568',
+          maxWidth: '600px'
+        }}>
+          Comprehensive analysis of India's happiness trends and socio-economic indicators
+        </p>
+      </div>
+    
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto', 
+        display: 'flex', 
+        flexDirection: 'column',
+        paddingRight: '8px'
+      }}>
       <div className="ind-timeframe-row">
           <style>{`
             .form-group {
@@ -305,41 +344,46 @@ const IndiaDashboard = () => {
             }
             .form-group label {
               font-weight: 600;
-              color: #2d3748;
+              color: #0097a7;
               margin-bottom: 0.2rem;
+              font-size: 1rem;
             }
             .form-group select, .form-group input[type='number'] {
-              padding: 0.5rem 1.2rem 0.5rem 0.7rem;
-              border: 1.5px solid #b3b3b3;
-              border-radius: 0.7rem;
-              background: #f8fafc;
-              font-size: 1.08rem;
-              color: #222;
-              transition: border 0.2s, box-shadow 0.2s;
+              padding: 0.5rem 0.75rem;
+              border: 2px solid #0097a7;
+              border-radius: 6px;
+              background: #fff;
+              font-size: 0.9rem;
+              font-weight: 600;
+              color: #0097a7;
+              transition: all 0.2s ease;
               outline: none;
-              box-shadow: 0 1px 4px 0 rgba(60,60,60,0.04);
-              width: auto;
+              cursor: pointer;
             }
             .form-group select:focus, .form-group input[type='number']:focus {
-              border: 1.5px solid #3182ce;
-              box-shadow: 0 0 0 2px #90cdf4;
+              border-color: #0097a7;
+              box-shadow: 0 0 0 2px rgba(0, 151, 167, 0.2);
             }
             .form-group select:disabled, .form-group input[type='number']:disabled {
               background: #e2e8f0;
               color: #888;
+              border-color: #e2e8f0;
             }
           `}</style>
           <div style={{
             display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: '1.2rem',
-            margin: '2.5rem 0 1.5rem 0',
-            alignItems: 'flex-end',
-            justifyContent: 'flex-start',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '1.5rem',
+            padding: '1rem',
+            background: '#e0f7fa',
+            borderRadius: '8px',
+            border: '1px solid #0097a7',
+            flexWrap: 'wrap'
           }}>
             <div className="form-group" style={{ minWidth: 180, flex: 1 }}>
-              <label htmlFor="ind-timeframe-select">Select Timeframe:</label>
+              <label htmlFor="ind-timeframe-select">Timeframe:</label>
               <select
                 id="ind-timeframe-select"
                 value={selectedTimeframe}
@@ -404,29 +448,31 @@ const IndiaDashboard = () => {
             </button>
           </div>
           {error && (
-            <div className="error" style={{ color: '#e53e3e', marginBottom: '1rem', backgroundColor: '#fed7d7', padding: '0.5rem', borderRadius: '4px', border: '1px solid #feb2b2' }}>
+            <div style={{
+              background: '#fed7d7',
+              color: '#c53030',
+              padding: '1rem',
+              borderRadius: '6px',
+              marginBottom: '1rem',
+              fontSize: '0.9rem'
+            }}>
               {error}
             </div>
           )}
-      </div>
-      {error && (
-        <div className="error">
-          {error}
-        </div>
-      )}
-    {/* Export buttons for each chart (styled like HappinessComparison) */}
+    {/* Export Buttons Styling */}
     <style>{`
       .export-btn {
         padding: 0.5rem 1rem;
         background: #0097a7;
         color: white;
         border: none;
-        border-radius: 0.5rem;
+        border-radius: 6px;
         cursor: pointer;
         font-weight: 600;
         transition: background 0.2s;
         margin-right: 0.5rem;
         margin-bottom: 0.5rem;
+        font-size: 0.9rem;
       }
       .export-btn:hover {
         background: #00838f;
@@ -494,9 +540,24 @@ const IndiaDashboard = () => {
 
 
 
-      {/* Fun Happiness Trend Chart for India */}
-      <div style={{ margin: '2rem 0', background: 'linear-gradient(135deg, #e0eafc 0%, #f8fafc 100%)', borderRadius: '10px', boxShadow: '0 2px 12px 0 rgba(60,60,60,0.08)', padding: '1.5rem', maxWidth: 700, marginLeft: 'auto', marginRight: 'auto', color: '#333', fontFamily: 'inherit' }}>
-        <h3 style={{ textAlign: 'center', color: '#2d3748', fontWeight: 700, fontSize: '1.5rem', marginBottom: '1.2rem', letterSpacing: 0.5 }}>India: Happiness Trend <span role="img" aria-label="smile">🙂</span></h3>
+      {/* India Happiness Trend Chart */}
+      <div style={{ 
+        margin: '2rem 0', 
+        background: '#ffffff', 
+        borderRadius: '8px', 
+        border: '1px solid #e2e8f0',
+        padding: '1.5rem', 
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+      }}>
+        <h3 style={{ 
+          textAlign: 'center', 
+          color: '#2d3748', 
+          fontWeight: 700, 
+          fontSize: '1.5rem', 
+          marginBottom: '1.2rem'
+        }}>
+          🇮🇳 India: Happiness Trend
+        </h3>
         {indiaStats && indiaStats.happinessSeries && indiaStats.happinessSeries.length > 0 ? (
           <div style={{ width: '100%', maxWidth: 600, margin: '0 auto' }}>
             <Line
@@ -584,11 +645,57 @@ const IndiaDashboard = () => {
           </div>
         )}
       </div>
-  {/* --- SECTION 2: DETAILED ANALYSIS --- */}
-  <h2 style={{ textAlign: 'center', color: '#1a237e', fontWeight: 800, fontSize: '2rem', margin: '3.5rem 0 1.5rem 0', letterSpacing: 0.5 }}>Detailed Analysis</h2>
-  <div className="responsive-grid" style={{ margin: '2rem 0', display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center', alignItems: 'flex-start', width: '100%' }}>
+  {/* Detailed Analysis Section */}
+  <div style={{
+    textAlign: 'center',
+    marginTop: '3rem',
+    marginBottom: '2rem'
+  }}>
+    <h2 style={{ 
+      margin: 0, 
+      marginBottom: '0.5rem', 
+      fontSize: '1.8rem',
+      fontWeight: 700,
+      color: '#2d3748'
+    }}>
+      📊 Detailed Analysis
+    </h2>
+    <p style={{ 
+      margin: '0 auto', 
+      fontSize: '1rem',
+      color: '#4a5568',
+      maxWidth: '600px'
+    }}>
+      Comprehensive view of happiness trends and socio-economic indicators
+    </p>
+  </div>
+  
+  <div className="responsive-grid" style={{ 
+    margin: '2rem 0', 
+    display: 'flex', 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: '2rem', 
+    justifyContent: 'center', 
+    alignItems: 'flex-start', 
+    width: '100%' 
+  }}>
         {/* Multi-Line Chart for All Indicators vs Happiness */}
-        <div style={{ flex: '1 1 420px', minWidth: 340, maxWidth: 700, background: 'linear-gradient(135deg, #e0eafc 0%, #f8fafc 100%)', borderRadius: '10px', color: '#333', minHeight: 380, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem' }}>
+        <div style={{ 
+          flex: '1 1 420px', 
+          minWidth: 340, 
+          maxWidth: 700, 
+          background: '#ffffff', 
+          borderRadius: '8px', 
+          border: '1px solid #e2e8f0',
+          color: '#333', 
+          minHeight: 380, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          padding: '1.5rem',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        }}>
           <h3 style={{ margin: '0 0 0.5rem 0' }}>India: Happiness & Development Indicators</h3>
           {indiaStats && indiaStats.happinessSeries && indiaStats.happinessSeries.length > 0 ? (
             <div style={{ width: '100%', maxWidth: 640, height: 300 }}>
@@ -637,7 +744,21 @@ const IndiaDashboard = () => {
           <p style={{ margin: 0, fontSize: '0.9rem' }}>India, {startYear}-{endYear}</p>
         </div>
         {/* Correlation Bar Chart */}
-        <div style={{ flex: '1 1 340px', minWidth: 340, maxWidth: 480, background: 'linear-gradient(135deg, #f8fafc 0%, #e0eafc 100%)', borderRadius: '10px', color: '#333', minHeight: 380, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem' }}>
+        <div style={{ 
+          flex: '1 1 340px', 
+          minWidth: 340, 
+          maxWidth: 480, 
+          background: '#ffffff', 
+          borderRadius: '8px', 
+          border: '1px solid #e2e8f0',
+          color: '#333', 
+          minHeight: 380, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          padding: '1.5rem',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        }}>
           <h3 style={{ margin: '0 0 0.5rem 0' }}>Correlation with Happiness Index</h3>
           <p style={{ margin: 0, fontSize: '0.95rem', color: '#555' }}>Indicators ranked by their correlation strength with India's happiness score</p>
           {correlationData && correlationData.length > 0 ? (
@@ -721,25 +842,60 @@ const IndiaDashboard = () => {
       </div>
 
       {/* Key Insights */}
-      <div className="chart-container">
-        <h3>Key Insights for India</h3>
-        <div className="responsive-grid">
-          <div style={{ padding: '1rem', background: '#e8f5e8', borderRadius: '8px', borderLeft: '4px solid #43e97b' }}>
+      <div style={{
+        margin: '2rem 0',
+        background: '#ffffff',
+        borderRadius: '8px',
+        border: '1px solid #e2e8f0',
+        padding: '1.5rem',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+      }}>
+        <h3 style={{
+          textAlign: 'center',
+          color: '#2d3748',
+          fontWeight: 700,
+          fontSize: '1.5rem',
+          marginBottom: '1.2rem'
+        }}>
+          💡 Key Insights for India
+        </h3>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '1rem'
+        }}>
+          <div style={{ 
+            padding: '1rem', 
+            background: '#e8f5e8', 
+            borderRadius: '8px', 
+            borderLeft: '4px solid #43e97b' 
+          }}>
             <h4 style={{ color: '#2d5a2d', margin: '0 0 0.5rem 0' }}>💪 Strongest Positive Driver</h4>
             <p style={{ margin: 0, color: '#333' }}>Social Support shows the highest correlation (0.81) with happiness scores in India</p>
           </div>
           
-          <div style={{ padding: '1rem', background: '#ffebee', borderRadius: '8px', borderLeft: '4px solid #f5576c' }}>
+          <div style={{ 
+            padding: '1rem', 
+            background: '#ffebee', 
+            borderRadius: '8px', 
+            borderLeft: '4px solid #f5576c' 
+          }}>
             <h4 style={{ color: '#c62828', margin: '0 0 0.5rem 0' }}>⚠️ Key Challenge</h4>
             <p style={{ margin: 0, color: '#333' }}>Unemployment rate negatively impacts happiness and needs attention for improvement</p>
           </div>
           
-          <div style={{ padding: '1rem', background: '#e3f2fd', borderRadius: '8px', borderLeft: '4px solid #2196f3' }}>
+          <div style={{ 
+            padding: '1rem', 
+            background: '#e3f2fd', 
+            borderRadius: '8px', 
+            borderLeft: '4px solid #2196f3' 
+          }}>
             <h4 style={{ color: '#1565c0', margin: '0 0 0.5rem 0' }}>📊 Opportunity Area</h4>
             <p style={{ margin: 0, color: '#333' }}>Economic growth (GDP) and education improvements can significantly boost happiness</p>
           </div>
         </div>
       </div>
+      </div> {/* End of scrollable container */}
     </div>
   )
 }
