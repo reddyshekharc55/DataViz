@@ -454,7 +454,7 @@ const HappinessComparison = () => {
       flexDirection: 'column',
       justifyContent: 'flex-start',
       boxSizing: 'border-box',
-      overflow: 'hidden'
+      overflow: 'auto'
     }}>
       <style>{`
         .form-group {
@@ -972,7 +972,13 @@ const HappinessComparison = () => {
       )}
 
       {/* Chart Area */}
-      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ 
+        flex: 1, 
+        overflow: 'auto', 
+        display: 'flex', 
+        flexDirection: 'column',
+        minHeight: 0 
+      }}>
         <h3 style={{ margin: '0 0 0.4rem 0', fontSize: '1rem', color: '#2d3748' }}>
           {analysisMode === 'time-series' ? 'Dual-Axis Time Series Visualization' : 'Correlation Scatter Plot Analysis'}
         </h3>

@@ -262,10 +262,10 @@ export default function RegionalAnalysis({ onRegionSelect }) {
         position: 'top',
         labels: {
           font: {
-            size: 12,
+            size: 11,
             weight: '600'
           },
-          padding: 15
+          padding: 10
         }
       },
       title: {
@@ -274,10 +274,10 @@ export default function RegionalAnalysis({ onRegionSelect }) {
           ? `Regional Happiness Scores (${selectedYear})`
           : `Regional Happiness Trends (${startYear}-${endYear})`,
         font: {
-          size: 16,
+          size: 14,
           weight: 'bold'
         },
-        padding: 20
+        padding: 15
       },
       tooltip: {
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -325,8 +325,13 @@ export default function RegionalAnalysis({ onRegionSelect }) {
           display: true,
           text: 'Happiness Score',
           font: {
-            size: 14,
+            size: 12,
             weight: '600'
+          }
+        },
+        ticks: {
+          font: {
+            size: 10
           }
         },
         grid: {
@@ -338,7 +343,7 @@ export default function RegionalAnalysis({ onRegionSelect }) {
           display: true,
           text: viewMode === 'happiness-aggregated' ? 'Region' : 'Year',
           font: {
-            size: 14,
+            size: 12,
             weight: '600'
           }
         },
@@ -347,7 +352,7 @@ export default function RegionalAnalysis({ onRegionSelect }) {
         },
         ticks: {
           font: {
-            size: 10
+            size: 9
           },
           maxRotation: 0,
           minRotation: 0
@@ -364,27 +369,26 @@ export default function RegionalAnalysis({ onRegionSelect }) {
       flexDirection: 'column',
       justifyContent: 'flex-start',
       boxSizing: 'border-box',
-      padding: '1.5rem',
-      overflow: 'hidden',
+      padding: '0.75rem',
+      overflow: 'auto',
       background: '#ffffff',
       color: '#333'
     }}>
       <div style={{
         textAlign: 'center',
-        marginBottom: '2rem'
+        marginBottom: '0.75rem'
       }}>
-        <h2 style={{ 
-          margin: 0, 
-          marginBottom: '0.5rem', 
-          fontSize: '2rem',
+        <h3 style={{ 
+          margin: '0 0 0.25rem 0', 
+          fontSize: '1.5rem',
           fontWeight: 700,
           color: '#2d3748'
         }}>
           🗺️ Regional Happiness Analysis
-        </h2>
+        </h3>
         <p style={{ 
           margin: '0 auto', 
-          fontSize: '1rem',
+          fontSize: '0.85rem',
           color: '#4a5568',
           maxWidth: '600px'
         }}>
@@ -396,21 +400,21 @@ export default function RegionalAnalysis({ onRegionSelect }) {
       <div style={{
         display: 'flex',
         justifyContent: 'center',
-        gap: '0.5rem',
-        marginBottom: '1.5rem',
+        gap: '0.4rem',
+        marginBottom: '0.75rem',
         flexWrap: 'wrap'
       }}>
         <button
           onClick={() => setViewMode('happiness-aggregated')}
           style={{
-            padding: '0.5rem 1rem',
+            padding: '0.4rem 0.8rem',
             border: '2px solid #0097a7',
             borderRadius: '6px',
             background: viewMode === 'happiness-aggregated' ? '#0097a7' : '#fff',
             color: viewMode === 'happiness-aggregated' ? '#fff' : '#0097a7',
             fontWeight: '600',
             cursor: 'pointer',
-            fontSize: '0.9rem'
+            fontSize: '0.85rem'
           }}
         >
           📊 Aggregated Happiness
@@ -418,14 +422,14 @@ export default function RegionalAnalysis({ onRegionSelect }) {
         <button
           onClick={() => setViewMode('happiness-trend')}
           style={{
-            padding: '0.5rem 1rem',
+            padding: '0.4rem 0.8rem',
             border: '2px solid #0097a7',
             borderRadius: '6px',
             background: viewMode === 'happiness-trend' ? '#0097a7' : '#fff',
             color: viewMode === 'happiness-trend' ? '#fff' : '#0097a7',
             fontWeight: '600',
             cursor: 'pointer',
-            fontSize: '0.9rem'
+            fontSize: '0.85rem'
           }}
         >
           📈 Happiness Trends
@@ -442,25 +446,25 @@ export default function RegionalAnalysis({ onRegionSelect }) {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: '1rem',
-            marginBottom: '1.5rem',
-            padding: '1rem',
+            gap: '0.75rem',
+            marginBottom: '0.75rem',
+            padding: '0.5rem',
             background: '#e0f7fa',
-            borderRadius: '8px',
+            borderRadius: '6px',
             border: '1px solid #0097a7',
             flexWrap: 'wrap'
           }}>
-            <label style={{ fontWeight: '600', color: '#0097a7', minWidth: '80px', fontSize: '1rem' }}>
+            <label style={{ fontWeight: '600', color: '#0097a7', minWidth: '60px', fontSize: '0.9rem' }}>
               Year:
             </label>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
               style={{
-                padding: '0.5rem 0.75rem',
+                padding: '0.4rem 0.6rem',
                 border: '2px solid #0097a7',
-                borderRadius: '6px',
-                fontSize: '0.9rem',
+                borderRadius: '5px',
+                fontSize: '0.85rem',
                 fontWeight: '600',
                 background: '#fff',
                 color: '#0097a7',
@@ -480,10 +484,10 @@ export default function RegionalAnalysis({ onRegionSelect }) {
             <div style={{
               background: '#fed7d7',
               color: '#c53030',
-              padding: '1rem',
-              borderRadius: '6px',
-              marginBottom: '1rem',
-              fontSize: '0.9rem'
+              padding: '0.5rem',
+              borderRadius: '5px',
+              marginBottom: '0.5rem',
+              fontSize: '0.85rem'
             }}>
               {error}
             </div>
@@ -495,9 +499,9 @@ export default function RegionalAnalysis({ onRegionSelect }) {
             minHeight: 0,
             position: 'relative',
             background: '#ffffff',
-            borderRadius: '8px',
+            borderRadius: '6px',
             border: '1px solid #e2e8f0',
-            padding: '1rem'
+            padding: '0.5rem'
           }}>
             {loading ? (
               <div style={{
@@ -525,22 +529,22 @@ export default function RegionalAnalysis({ onRegionSelect }) {
           <div style={{ 
             display: 'flex', 
             justifyContent: 'center', 
-            marginTop: '1rem',
-            marginBottom: '1rem'
+            marginTop: '0.5rem',
+            marginBottom: '0.25rem'
           }}>
             <button
               className="export-btn"
               onClick={() => exportChart(`Regional-Happiness-Aggregated-${selectedYear}.png`)}
               disabled={loading || !getAggregatedChartData()}
               style={{
-                padding: '0.5rem 1rem',
+                padding: '0.4rem 0.8rem',
                 background: loading || !getAggregatedChartData() ? '#ccc' : '#0097a7',
                 color: 'white',
                 border: 'none',
-                borderRadius: '6px',
+                borderRadius: '5px',
                 cursor: loading || !getAggregatedChartData() ? 'not-allowed' : 'pointer',
                 fontWeight: '600',
-                fontSize: '0.9rem',
+                fontSize: '0.8rem',
                 transition: 'background 0.2s'
               }}
               onMouseEnter={(e) => {
@@ -567,15 +571,15 @@ export default function RegionalAnalysis({ onRegionSelect }) {
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '1rem',
-            marginBottom: '1.5rem',
-            padding: '1rem',
+            gap: '0.5rem',
+            marginBottom: '0.75rem',
+            padding: '0.5rem',
             background: '#e0f7fa',
-            borderRadius: '8px',
+            borderRadius: '6px',
             border: '1px solid #0097a7'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <label style={{ fontWeight: '600', color: '#0097a7', minWidth: '80px', fontSize: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <label style={{ fontWeight: '600', color: '#0097a7', minWidth: '60px', fontSize: '0.9rem' }}>
                 Years:
               </label>
               <select
@@ -589,10 +593,10 @@ export default function RegionalAnalysis({ onRegionSelect }) {
                   }
                 }}
                 style={{
-                  padding: '0.5rem 0.75rem',
+                  padding: '0.4rem 0.6rem',
                   border: '2px solid #0097a7',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
+                  borderRadius: '5px',
+                  fontSize: '0.85rem',
                   fontWeight: '600',
                   background: '#fff',
                   color: '#0097a7',
@@ -605,15 +609,15 @@ export default function RegionalAnalysis({ onRegionSelect }) {
                   <option key={year} value={year}>{year}</option>
                 ))}
               </select>
-              <span style={{ color: '#0097a7', fontWeight: '600' }}>to</span>
+              <span style={{ color: '#0097a7', fontWeight: '600', fontSize: '0.85rem' }}>to</span>
               <select
                 value={endYear}
                 onChange={(e) => setEndYear(parseInt(e.target.value))}
                 style={{
-                  padding: '0.5rem 0.75rem',
+                  padding: '0.4rem 0.6rem',
                   border: '2px solid #0097a7',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
+                  borderRadius: '5px',
+                  fontSize: '0.85rem',
                   fontWeight: '600',
                   background: '#fff',
                   color: '#0097a7',
@@ -631,28 +635,28 @@ export default function RegionalAnalysis({ onRegionSelect }) {
             </div>
 
             {/* Region Selection */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
-              <label style={{ fontWeight: '600', color: '#0097a7', minWidth: '80px', marginTop: '0.25rem', fontSize: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <label style={{ fontWeight: '600', color: '#0097a7', minWidth: '60px', marginTop: '0.2rem', fontSize: '0.9rem' }}>
                 Regions:
               </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', flex: 1 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', flex: 1 }}>
                 {WORLD_BANK_REGIONS.map(region => (
                   <button
                     key={region.name}
                     onClick={() => handleRegionToggleForTrend(region.name)}
                     style={{
-                      padding: '0.4rem 0.8rem',
+                      padding: '0.3rem 0.6rem',
                       border: '2px solid',
                       borderColor: selectedRegionsForTrend.includes(region.name) ? region.color : '#e2e8f0',
-                      borderRadius: '6px',
+                      borderRadius: '5px',
                       background: selectedRegionsForTrend.includes(region.name) ? region.lightColor : '#fff',
                       color: selectedRegionsForTrend.includes(region.name) ? region.color : '#4a5568',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      fontSize: '0.85rem',
+                      fontSize: '0.75rem',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.3rem'
+                      gap: '0.25rem'
                     }}
                   >
                     {region.emoji} {region.name}
@@ -667,10 +671,10 @@ export default function RegionalAnalysis({ onRegionSelect }) {
             <div style={{
               background: '#fed7d7',
               color: '#c53030',
-              padding: '1rem',
-              borderRadius: '6px',
-              marginBottom: '1rem',
-              fontSize: '0.9rem'
+              padding: '0.5rem',
+              borderRadius: '5px',
+              marginBottom: '0.5rem',
+              fontSize: '0.85rem'
             }}>
               {error}
             </div>
@@ -682,9 +686,9 @@ export default function RegionalAnalysis({ onRegionSelect }) {
             minHeight: 0,
             position: 'relative',
             background: '#ffffff',
-            borderRadius: '8px',
+            borderRadius: '6px',
             border: '1px solid #e2e8f0',
-            padding: '1rem'
+            padding: '0.5rem'
           }}>
             {loading ? (
               <div style={{
@@ -692,7 +696,7 @@ export default function RegionalAnalysis({ onRegionSelect }) {
                 justifyContent: 'center',
                 alignItems: 'center',
                 height: '100%',
-                fontSize: '1.1rem',
+                fontSize: '1rem',
                 color: '#4a5568'
               }}>
                 Loading regional trend data...
@@ -712,22 +716,22 @@ export default function RegionalAnalysis({ onRegionSelect }) {
           <div style={{ 
             display: 'flex', 
             justifyContent: 'center', 
-            marginTop: '1rem',
-            marginBottom: '1rem'
+            marginTop: '0.5rem',
+            marginBottom: '0.25rem'
           }}>
             <button
               className="export-btn"
               onClick={() => exportChart(`Regional-Happiness-Trends-${startYear}-${endYear}.png`)}
               disabled={loading || !getTrendChartData()}
               style={{
-                padding: '0.5rem 1rem',
+                padding: '0.4rem 0.8rem',
                 background: loading || !getTrendChartData() ? '#ccc' : '#0097a7',
                 color: 'white',
                 border: 'none',
-                borderRadius: '6px',
+                borderRadius: '5px',
                 cursor: loading || !getTrendChartData() ? 'not-allowed' : 'pointer',
                 fontWeight: '600',
-                fontSize: '0.9rem',
+                fontSize: '0.8rem',
                 transition: 'background 0.2s'
               }}
               onMouseEnter={(e) => {

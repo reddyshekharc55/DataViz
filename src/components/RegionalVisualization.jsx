@@ -292,7 +292,7 @@ const RegionalVisualization = () => {
       flexDirection: 'column',
       justifyContent: 'flex-start',
       boxSizing: 'border-box',
-      overflow: 'hidden'
+      overflow: 'auto'
     }}>
       <style>{`
         .form-group {
@@ -341,6 +341,37 @@ const RegionalVisualization = () => {
         .export-btn:disabled {
           background: #ccc;
           cursor: not-allowed;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .chart-container > div:first-of-type {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        
+        /* Ensure proper scrolling on all screen sizes */
+        .chart-container {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e0 #f7fafc;
+        }
+        
+        .chart-container::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        .chart-container::-webkit-scrollbar-track {
+          background: #f7fafc;
+          border-radius: 4px;
+        }
+        
+        .chart-container::-webkit-scrollbar-thumb {
+          background: #cbd5e0;
+          border-radius: 4px;
+        }
+        
+        .chart-container::-webkit-scrollbar-thumb:hover {
+          background: #a0aec0;
         }
       `}</style>
       
@@ -426,15 +457,21 @@ const RegionalVisualization = () => {
 
       {/* Charts Section */}
       {countryData.length > 0 && (
-        <div className="chart-container" style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="chart-container" style={{ 
+          flex: 1, 
+          overflow: 'auto', 
+          display: 'flex', 
+          flexDirection: 'column',
+          minHeight: 0 
+        }}>
           <h3 style={{ margin: '0 0 0.5rem 0', color: '#2d3748' }}>Comparison Analysis</h3>
           
           {/* Charts Grid */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
             gap: '1rem',
-            height: '300px',
+            minHeight: '350px',
             marginBottom: '1rem'
           }}>
             {/* Bar Chart Container */}

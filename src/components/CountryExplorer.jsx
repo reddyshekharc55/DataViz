@@ -121,7 +121,7 @@ const CountryExplorer = () => {
       flexDirection: 'column',
       justifyContent: 'flex-start',
       boxSizing: 'border-box',
-      overflow: 'hidden'
+      overflow: 'auto'
     }}>
       <style>{`
         .form-group {
@@ -242,7 +242,13 @@ const CountryExplorer = () => {
         </div>
       )}
 
-      <div className="chart-container" style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div className="chart-container" style={{ 
+        flex: 1, 
+        overflow: 'auto', 
+        display: 'flex', 
+        flexDirection: 'column',
+        minHeight: 0 
+      }}>
         <h3 style={{ margin: '0 0 0.5rem 0', color: '#2d3748' }}>Trend Analysis</h3>
         {loading ? (
           <div className="loading" style={{ color: '#4a5568' }}>Loading chart data...</div>

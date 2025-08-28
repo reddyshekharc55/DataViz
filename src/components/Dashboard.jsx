@@ -46,7 +46,7 @@ const Dashboard = ({ setPage }) => {
       justifyContent: 'flex-start',
       alignItems: 'center',
       boxSizing: 'border-box',
-      overflow: 'hidden'
+      overflow: 'auto'
     }}>
       <div style={{ maxWidth: 700, margin: '2rem auto', textAlign: 'center', fontSize: '1.08rem', color: '#2d3748', fontWeight: 500 }}>
         <p>

@@ -330,7 +330,7 @@ const IndiaDashboard = () => {
       justifyContent: 'flex-start',
       boxSizing: 'border-box',
       padding: '1.5rem',
-      overflow: 'hidden',
+      overflow: 'auto',
       background: '#ffffff',
       color: '#333'
     }}>
@@ -397,6 +397,30 @@ const IndiaDashboard = () => {
               background: #e2e8f0;
               color: #888;
               border-color: #e2e8f0;
+            }
+            
+            /* Custom scrollbar styling */
+            .card {
+              scrollbar-width: thin;
+              scrollbar-color: #cbd5e0 #f7fafc;
+            }
+            
+            .card::-webkit-scrollbar {
+              width: 8px;
+            }
+            
+            .card::-webkit-scrollbar-track {
+              background: #f7fafc;
+              border-radius: 4px;
+            }
+            
+            .card::-webkit-scrollbar-thumb {
+              background: #cbd5e0;
+              border-radius: 4px;
+            }
+            
+            .card::-webkit-scrollbar-thumb:hover {
+              background: #a0aec0;
             }
           `}</style>
           <div style={{
