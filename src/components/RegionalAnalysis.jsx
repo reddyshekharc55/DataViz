@@ -411,14 +411,14 @@ export default function RegionalAnalysis({ onRegionSelect }) {
         fontWeight: 700,
         color: '#2d3748'
       }}>
-        🗺️ Regional Happiness Analysis
+        🌍 Global Happiness Distribution by Region
       </h2>
       <p style={{ 
         margin: '0 0 0.5rem 0', 
         fontSize: '0.85rem',
         color: '#4a5568'
       }}>
-        Analyze aggregated happiness scores and trends across global regions
+        Visualize how happiness is distributed across different regions of the world
       </p>
 
       {/* View Mode Toggle */}
