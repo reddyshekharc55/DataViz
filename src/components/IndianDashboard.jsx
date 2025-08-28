@@ -96,7 +96,7 @@ const IndiaDashboard = () => {
     const loadCSV = async () => {
       try {
         // Try public folder path for Vite/React
-        const response = await fetch('/world_happiness_report_2024_with_codes.csv');
+        const response = await fetch('./world_happiness_report_2024_with_codes.csv');
         const csvText = await response.text();
         const parsed = Papa.parse(csvText, { header: true });
         setLifeLadderData(parsed.data.filter(row => (row['Country name'] || row['Country']) === 'India'));

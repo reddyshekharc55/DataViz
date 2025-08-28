@@ -21,7 +21,7 @@ const loadHappinessDataFromCSV = async () => {
   }
 
   try {
-    const response = await fetch('/world_happiness_report_2024_with_codes.csv')
+    const response = await fetch('./world_happiness_report_2024_with_codes.csv')
     const csvText = await response.text()
     const lines = csvText.split('\n')
     const headers = lines[0].split(',')
