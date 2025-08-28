@@ -77,6 +77,7 @@ const IndiaDashboard = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('5years')
   const [startYear, setStartYear] = useState(2019)
   const [endYear, setEndYear] = useState(2023)
+  const [availableYears, setAvailableYears] = useState([])
   const [lifeLadderData, setLifeLadderData] = useState([])
   const [correlationData, setCorrelationData] = useState([])
   const [chartData, setChartData] = useState(null)
@@ -99,10 +100,22 @@ const IndiaDashboard = () => {
         const response = await fetch('./world_happiness_report_2024_with_codes.csv');
         const csvText = await response.text();
         const parsed = Papa.parse(csvText, { header: true });
-        setLifeLadderData(parsed.data.filter(row => (row['Country name'] || row['Country']) === 'India'));
+        const indiaData = parsed.data.filter(row => (row['Country name'] || row['Country']) === 'India');
+        setLifeLadderData(indiaData);
+        
+        // Get available years from India data
+        if (indiaData.length > 0) {
+          const years = indiaData
+            .map(row => parseInt(row['year'] || row['Year']))
+            .filter(year => !isNaN(year))
+            .sort((a, b) => b - a); // Sort descending (newest first)
+          setAvailableYears([...new Set(years)]); // Remove duplicates
+        }
       } catch (err) {
         console.error('Error loading CSV:', err);
         setLifeLadderData([]);
+        // Fallback years if CSV loading fails
+        setAvailableYears([2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010]);
       }
     };
     loadCSV();
@@ -110,17 +123,33 @@ const IndiaDashboard = () => {
 
   // Update year range when timeframe changes
   useEffect(() => {
+    if (availableYears.length === 0) return; // Wait for available years to load
+    
+    let newStartYear, newEndYear;
     switch (selectedTimeframe) {
       case '5years':
-        setStartYear(2019); setEndYear(2023); break;
+        newEndYear = Math.max(...availableYears);
+        newStartYear = Math.max(newEndYear - 4, Math.min(...availableYears));
+        break;
       case '10years':
-        setStartYear(2014); setEndYear(2023); break;
+        newEndYear = Math.max(...availableYears);
+        newStartYear = Math.max(newEndYear - 9, Math.min(...availableYears));
+        break;
       case 'all':
-        setStartYear(2010); setEndYear(2023); break;
+        newStartYear = Math.min(...availableYears);
+        newEndYear = Math.max(...availableYears);
+        break;
       default:
-        setStartYear(2019); setEndYear(2023);
+        newEndYear = Math.max(...availableYears);
+        newStartYear = Math.max(newEndYear - 4, Math.min(...availableYears));
     }
-  }, [selectedTimeframe]);
+    
+    // Only update if the new years are different and valid
+    if (availableYears.includes(newStartYear) && availableYears.includes(newEndYear)) {
+      setStartYear(newStartYear);
+      setEndYear(newEndYear);
+    }
+  }, [selectedTimeframe, availableYears]);
 
   // Reload dashboard data when year range changes or CSV loads
   useEffect(() => {
@@ -383,7 +412,7 @@ const IndiaDashboard = () => {
             flexWrap: 'wrap'
           }}>
             <div className="form-group" style={{ minWidth: 180, flex: 1 }}>
-              <label htmlFor="ind-timeframe-select">Timeframe:</label>
+              <label htmlFor="ind-timeframe-select">⏱️ Timeframe:</label>
               <select
                 id="ind-timeframe-select"
                 value={selectedTimeframe}
@@ -396,26 +425,40 @@ const IndiaDashboard = () => {
               </select>
             </div>
             <div className="form-group" style={{ minWidth: 110, flex: 1 }}>
-              <label>Start Year:</label>
-              <input
-                type="number"
-                min="2010"
-                max={endYear}
+              <label>📅 Start Year:</label>
+              <select
                 value={startYear}
                 onChange={e => setStartYear(Number(e.target.value))}
-                disabled={loading}
-              />
+                disabled={loading || availableYears.length === 0}
+              >
+                {availableYears.length > 0 ? (
+                  availableYears
+                    .filter(year => year <= endYear)
+                    .map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))
+                ) : (
+                  <option value="">Loading years...</option>
+                )}
+              </select>
             </div>
             <div className="form-group" style={{ minWidth: 110, flex: 1 }}>
-              <label>End Year:</label>
-              <input
-                type="number"
-                min={startYear}
-                max="2023"
+              <label>📅 End Year:</label>
+              <select
                 value={endYear}
                 onChange={e => setEndYear(Number(e.target.value))}
-                disabled={loading}
-              />
+                disabled={loading || availableYears.length === 0}
+              >
+                {availableYears.length > 0 ? (
+                  availableYears
+                    .filter(year => year >= startYear)
+                    .map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))
+                ) : (
+                  <option value="">Loading years...</option>
+                )}
+              </select>
             </div>
             {/* <button 
               onClick={handleTimeframeChange}
