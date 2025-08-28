@@ -538,7 +538,7 @@ const HappinessComparison = () => {
       `}</style>
       
       <h2 style={{ margin: 0, marginBottom: '0.25rem', fontSize: '1.4rem', color: '#2d3748' }}>
-        📈 {analysisMode === 'time-series' ? 'Time Series: Indicator vs Happiness Trends' : 'Multi-Country Correlation Analysis'}
+        😊 {analysisMode === 'time-series' ? 'Time Series: Indicator vs Happiness Trends' : 'Multi-Country Correlation Analysis'}
       </h2>
       <p style={{ margin: 0, marginBottom: '0.5rem', color: '#4a5568', fontSize: '0.85rem' }}>
         {analysisMode === 'time-series' 

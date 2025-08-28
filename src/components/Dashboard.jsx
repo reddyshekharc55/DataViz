@@ -22,10 +22,9 @@ const pages = [
   },
   {
     title: 'Regional Comparison',
-    description: 'Compare happiness and indicators across regions. (Coming soon)',
+    description: 'Compare happiness and indicators across regions.',
     page: 'regional-comparison',
-    emoji: '📊',
-    disabled: true
+    emoji: '📊'
   },
   {
     title: 'Indian Dashboard',

@@ -380,7 +380,7 @@ export default function RegionalAnalysis({ onRegionSelect }) {
           fontWeight: 700,
           color: '#2d3748'
         }}>
-          🌍 Regional Happiness Analysis
+          🗺️ Regional Happiness Analysis
         </h2>
         <p style={{ 
           margin: '0 auto', 

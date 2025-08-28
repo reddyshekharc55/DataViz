@@ -345,7 +345,7 @@ const RegionalVisualization = () => {
       `}</style>
       
       <h2 style={{ margin: 0, marginBottom: '0.25rem', fontSize: '1.4rem', color: '#2d3748' }}>
-        🌍 Regional Country Comparison {loading && <span style={{ fontSize: '1rem', color: '#3182ce' }}>⏳</span>}
+        📊 Regional Country Comparison {loading && <span style={{ fontSize: '1rem', color: '#3182ce' }}>⏳</span>}
       </h2>
       <p style={{ margin: 0, marginBottom: '1rem', color: '#4a5568', fontSize: '0.85rem' }}>
         Compare countries within a region using happiness report indicators to see which are outperforming others
