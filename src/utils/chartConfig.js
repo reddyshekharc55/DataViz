@@ -65,16 +65,27 @@ export const getLineChartConfig = (title, datasets, labels) => ({
         display: true,
         text: title,
         font: {
-          size: 16,
+          size: window.innerWidth <= 768 ? 14 : 16,
           weight: 'bold'
         }
       },
       legend: {
-        position: 'top',
+        position: window.innerWidth <= 480 ? 'bottom' : 'top',
+        labels: {
+          boxWidth: window.innerWidth <= 480 ? 10 : 12,
+          fontSize: window.innerWidth <= 480 ? 10 : 12,
+          padding: window.innerWidth <= 480 ? 10 : 20
+        }
       },
       tooltip: {
         mode: 'index',
         intersect: false,
+        titleFont: {
+          size: window.innerWidth <= 480 ? 10 : 12
+        },
+        bodyFont: {
+          size: window.innerWidth <= 480 ? 9 : 11
+        }
       },
       datalabels: {
         display: false
@@ -90,14 +101,31 @@ export const getLineChartConfig = (title, datasets, labels) => ({
         display: true,
         title: {
           display: true,
-          text: 'Year'
+          text: 'Year',
+          font: {
+            size: window.innerWidth <= 480 ? 10 : 12
+          }
+        },
+        ticks: {
+          font: {
+            size: window.innerWidth <= 480 ? 9 : 11
+          },
+          maxRotation: window.innerWidth <= 480 ? 45 : 0
         }
       },
       y: {
         display: true,
         title: {
           display: true,
-          text: 'Value'
+          text: 'Value',
+          font: {
+            size: window.innerWidth <= 480 ? 10 : 12
+          }
+        },
+        ticks: {
+          font: {
+            size: window.innerWidth <= 480 ? 9 : 11
+          }
         }
       }
     }
@@ -110,11 +138,11 @@ export const createTrendDataset = (label, data, color = CHART_COLORS.primary, bo
   data,
   borderColor: borderColor,
   backgroundColor: color,
-  borderWidth: 2,
+  borderWidth: window.innerWidth <= 480 ? 1 : 2,
   fill: false,
   tension: 0.1,
-  pointRadius: 4,
-  pointHoverRadius: 6
+  pointRadius: window.innerWidth <= 480 ? 2 : 4,
+  pointHoverRadius: window.innerWidth <= 480 ? 4 : 6
 })
 
 // Bar chart configuration
@@ -132,16 +160,27 @@ export const getBarChartConfig = (title, datasets, labels) => ({
         display: true,
         text: title,
         font: {
-          size: 16,
+          size: window.innerWidth <= 768 ? 14 : 16,
           weight: 'bold'
         }
       },
       legend: {
-        position: 'top',
+        position: window.innerWidth <= 480 ? 'bottom' : 'top',
+        labels: {
+          boxWidth: window.innerWidth <= 480 ? 10 : 12,
+          fontSize: window.innerWidth <= 480 ? 10 : 12,
+          padding: window.innerWidth <= 480 ? 10 : 20
+        }
       },
       tooltip: {
         mode: 'index',
         intersect: false,
+        titleFont: {
+          size: window.innerWidth <= 480 ? 10 : 12
+        },
+        bodyFont: {
+          size: window.innerWidth <= 480 ? 9 : 11
+        }
       }
     },
     scales: {
@@ -149,14 +188,31 @@ export const getBarChartConfig = (title, datasets, labels) => ({
         display: true,
         title: {
           display: true,
-          text: 'Countries'
+          text: 'Countries',
+          font: {
+            size: window.innerWidth <= 480 ? 10 : 12
+          }
+        },
+        ticks: {
+          font: {
+            size: window.innerWidth <= 480 ? 9 : 11
+          },
+          maxRotation: window.innerWidth <= 480 ? 45 : 0
         }
       },
       y: {
         display: true,
         title: {
           display: true,
-          text: 'Score'
+          text: 'Score',
+          font: {
+            size: window.innerWidth <= 480 ? 10 : 12
+          }
+        },
+        ticks: {
+          font: {
+            size: window.innerWidth <= 480 ? 9 : 11
+          }
         },
         beginAtZero: true
       }
@@ -193,7 +249,7 @@ export const getDoughnutChartConfig = (title, data, labels) => ({
       data,
       backgroundColor: generateColorPalette(data.length),
       borderColor: generateColorPalette(data.length).map(color => color.replace('0.8', '1')),
-      borderWidth: 2
+      borderWidth: window.innerWidth <= 480 ? 1 : 2
     }]
   },
   options: {
@@ -204,15 +260,17 @@ export const getDoughnutChartConfig = (title, data, labels) => ({
         display: true,
         text: title,
         font: {
-          size: 16,
+          size: window.innerWidth <= 768 ? 14 : 16,
           weight: 'bold'
         }
       },
       legend: {
         position: 'bottom',
         labels: {
-          padding: 20,
-          usePointStyle: true
+          padding: window.innerWidth <= 480 ? 10 : 20,
+          usePointStyle: true,
+          boxWidth: window.innerWidth <= 480 ? 10 : 12,
+          fontSize: window.innerWidth <= 480 ? 10 : 12
         }
       }
     }

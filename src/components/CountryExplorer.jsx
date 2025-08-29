@@ -153,6 +153,48 @@ const CountryExplorer = () => {
           background: #e2e8f0;
           color: #888;
         }
+        
+        /* Mobile responsive styles */
+        .controls-container {
+          gap: 0.8rem !important;
+        }
+        
+        @media (max-width: 768px) {
+          .controls-container {
+            gap: 0.6rem !important;
+            margin: 0.8rem 0 !important;
+          }
+          .form-group {
+            min-width: 120px !important;
+            flex: 1 1 45% !important;
+          }
+          .form-group select {
+            font-size: 0.95rem;
+            padding: 0.4rem 1rem 0.4rem 0.6rem;
+          }
+          .form-group label {
+            font-size: 0.9rem;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .controls-container {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+            margin: 0.6rem 0 !important;
+          }
+          .form-group {
+            min-width: 100% !important;
+            flex: none !important;
+          }
+          .form-group select {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem 0.4rem 0.5rem;
+          }
+          .form-group label {
+            font-size: 0.85rem;
+          }
+        }
       `}</style>
       <h2 style={{ margin: 0, marginBottom: '0.25rem', fontSize: '1.4rem', color: '#2d3748' }}>
         🌍 Country Explorer
@@ -162,7 +204,7 @@ const CountryExplorer = () => {
       </p>
 
       {/* Controls */}
-      <div style={{
+      <div className="controls-container form-controls" style={{
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -257,7 +299,7 @@ const CountryExplorer = () => {
         {loading ? (
           <div className="loading" style={{ color: '#4a5568' }}>Loading chart data...</div>
         ) : chartData ? (
-          <div style={{ height: '100%', flex: 1, minHeight: 0 }}>
+          <div className="chart-wrapper" style={{ height: '100%', flex: 1, minHeight: 0 }}>
             <Line ref={chartRef} {...chartData} />
           </div>
         ) : (

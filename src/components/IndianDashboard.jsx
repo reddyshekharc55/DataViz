@@ -386,6 +386,42 @@ const IndiaDashboard = () => {
           .chart-container > div:first-of-type {
             grid-template-columns: 1fr !important;
           }
+          .form-group {
+            min-width: 120px;
+          }
+          .form-group select {
+            font-size: 0.95rem;
+            padding: 0.4rem 1rem 0.4rem 0.6rem;
+          }
+          .form-group label {
+            font-size: 0.9rem;
+          }
+          .export-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .chart-container > div:first-of-type {
+            gap: 0.5rem !important;
+            padding: 0.5rem !important;
+          }
+          .form-group {
+            min-width: 100%;
+          }
+          .form-group select {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem 0.4rem 0.5rem;
+          }
+          .form-group label {
+            font-size: 0.85rem;
+          }
+          .export-btn {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.85rem;
+            width: 100%;
+          }
         }
         
         /* Ensure proper scrolling on all screen sizes */

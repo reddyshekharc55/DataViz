@@ -49,7 +49,7 @@ const Dashboard = ({ setPage }) => {
       overflow: 'auto'
     }}>
       <div style={{ maxWidth: 700, margin: '2rem auto', textAlign: 'center', fontSize: '1.08rem', color: '#2d3748', fontWeight: 500 }}>
-        <p>
+        <p className="dashboard-intro">
           Discover happiness around the world! 🌏<br/>
           Explore trends, compare countries, and see what drives well-being. Real data. Simple insights. Enjoy the journey!
         </p>
@@ -62,6 +62,25 @@ const Dashboard = ({ setPage }) => {
           justify-content: center;
           margin-top: 1.5rem;
           width: 100%;
+        }
+        .dashboard-intro {
+          font-size: 1.08rem;
+          line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+          .dashboard-intro {
+            font-size: 1rem !important;
+            margin: 1.5rem auto !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .dashboard-intro {
+            font-size: 0.9rem !important;
+            margin: 1rem auto !important;
+            line-height: 1.4 !important;
+          }
         }
         @media (max-width: 900px) {
           .dashboard-cards {

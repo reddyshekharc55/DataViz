@@ -404,6 +404,33 @@ export default function RegionalAnalysis({ onRegionSelect }) {
           background: #e2e8f0;
           color: #888;
         }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+          .form-group {
+            min-width: 120px;
+          }
+          .form-group select {
+            font-size: 0.95rem;
+            padding: 0.4rem 1rem 0.4rem 0.6rem;
+          }
+          .form-group label {
+            font-size: 0.9rem;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .form-group {
+            min-width: 100%;
+          }
+          .form-group select {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem 0.4rem 0.5rem;
+          }
+          .form-group label {
+            font-size: 0.85rem;
+          }
+        }
       `}</style>
       <h2 style={{ 
         margin: '0 0 0.25rem 0', 

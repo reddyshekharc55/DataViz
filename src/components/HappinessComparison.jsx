@@ -535,6 +535,72 @@ const HappinessComparison = () => {
           border-color: #3182ce;
           box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
         }
+        
+        /* Mobile responsive styles */
+        .toggle-container {
+          margin-bottom: 1rem;
+        }
+        .toggle-btn {
+          touch-action: manipulation;
+          min-height: 36px;
+        }
+        
+        @media (max-width: 768px) {
+          .toggle-container div {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.8rem !important;
+          }
+          .toggle-container div > span {
+            font-size: 0.85rem !important;
+          }
+          .toggle-btn {
+            font-size: 0.75rem !important;
+            padding: 0.35rem 0.7rem !important;
+            min-height: 34px !important;
+          }
+          .form-group {
+            min-width: 120px;
+          }
+          .form-group select {
+            font-size: 0.95rem;
+            padding: 0.4rem 1rem 0.4rem 0.6rem;
+          }
+          .form-group label {
+            font-size: 0.9rem;
+          }
+          .export-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .toggle-container div {
+            gap: 0.6rem !important;
+          }
+          .toggle-btn {
+            font-size: 0.7rem !important;
+            padding: 0.3rem 0.6rem !important;
+            min-height: 32px !important;
+            flex: 1;
+          }
+          .form-group {
+            min-width: 100%;
+          }
+          .form-group select {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem 0.4rem 0.5rem;
+          }
+          .form-group label {
+            font-size: 0.85rem;
+          }
+          .export-btn {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.85rem;
+            width: 100%;
+          }
+        }
       `}</style>
       
       <h2 style={{ margin: 0, marginBottom: '0.25rem', fontSize: '1.4rem', color: '#2d3748' }}>
@@ -548,10 +614,11 @@ const HappinessComparison = () => {
       </p>
 
       {/* Analysis Mode Toggle */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+      <div className="toggle-container" style={{ marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#4a5568' }}>Analysis Mode:</span>
           <button
+            className="toggle-btn"
             onClick={() => setAnalysisMode('time-series')}
             style={{
               padding: '0.4rem 0.8rem',
@@ -566,6 +633,7 @@ const HappinessComparison = () => {
             Time Series
           </button>
           <button
+            className="toggle-btn"
             onClick={() => setAnalysisMode('correlation')}
             style={{
               padding: '0.4rem 0.8rem',

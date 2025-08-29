@@ -343,6 +343,44 @@ const RegionalVisualization = () => {
           cursor: not-allowed;
         }
         
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+          .form-group {
+            min-width: 120px;
+          }
+          .form-group select {
+            font-size: 0.95rem;
+            padding: 0.4rem 1rem 0.4rem 0.6rem;
+          }
+          .form-group label {
+            font-size: 0.9rem;
+          }
+          .export-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+            margin-top: 0.4rem;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .form-group {
+            min-width: 100%;
+          }
+          .form-group select {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem 0.4rem 0.5rem;
+          }
+          .form-group label {
+            font-size: 0.85rem;
+          }
+          .export-btn {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.85rem;
+            width: 100%;
+            margin-top: 0.3rem;
+          }
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 768px) {
           .chart-container > div:first-of-type {

@@ -28,6 +28,21 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  font-size: 16px;
+}
+
+/* Responsive typography */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+    min-width: 280px;
+  }
 }
 
 h1 {
@@ -45,6 +60,24 @@ button {
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
+  touch-action: manipulation; /* Improve touch responsiveness */
+}
+
+/* Mobile button improvements */
+@media (max-width: 768px) {
+  button {
+    padding: 0.5em 1em;
+    font-size: 0.9em;
+    min-height: 44px; /* Minimum touch target size */
+  }
+}
+
+@media (max-width: 480px) {
+  button {
+    padding: 0.4em 0.8em;
+    font-size: 0.85em;
+    min-height: 40px;
+  }
 }
 button:hover {
   border-color: #646cff;
