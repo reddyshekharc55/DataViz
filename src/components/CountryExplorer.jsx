@@ -175,6 +175,10 @@ const CountryExplorer = () => {
           .form-group label {
             font-size: 0.9rem;
           }
+          .export-btn {
+            min-width: 80px !important;
+            font-size: 0.9rem;
+          }
         }
         
         @media (max-width: 480px) {
@@ -192,6 +196,11 @@ const CountryExplorer = () => {
             padding: 0.4rem 0.8rem 0.4rem 0.5rem;
           }
           .form-group label {
+            font-size: 0.85rem;
+          }
+          .export-btn {
+            width: 100% !important;
+            min-width: 100% !important;
             font-size: 0.85rem;
           }
         }
@@ -248,37 +257,38 @@ const CountryExplorer = () => {
             ))}
           </select>
         </div>
-        <div className="form-group" style={{ minWidth: 100, flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div className="form-group" style={{ minWidth: 100, flex: 1 }}>
           <label>End Year:</label>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}>
-            <select
-              value={endYear}
-              onChange={(e) => setEndYear(e.target.value)}
-            >
-              {Array.from({ length: 14 }, (_, i) => 2010 + i).map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-            {/* Export Button - now next to End Year */}
-            <button
-              className="export-btn"
-              onClick={exportChart}
-              disabled={!chartData || loading}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#0097a7',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                cursor: !chartData || loading ? 'not-allowed' : 'pointer',
-                fontWeight: 600,
-                transition: 'background 0.2s',
-                opacity: !chartData || loading ? 0.6 : 1
-              }}
-            >
-              📸 Export Chart
-            </button>
-          </div>
+          <select
+            value={endYear}
+            onChange={(e) => setEndYear(e.target.value)}
+          >
+            {Array.from({ length: 14 }, (_, i) => 2010 + i).map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group" style={{ minWidth: 100, flex: '0 0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          <button
+            className="export-btn"
+            onClick={exportChart}
+            disabled={!chartData || loading}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#0097a7',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              cursor: !chartData || loading ? 'not-allowed' : 'pointer',
+              fontWeight: 600,
+              transition: 'background 0.2s',
+              opacity: !chartData || loading ? 0.6 : 1,
+              whiteSpace: 'nowrap',
+              minWidth: '90px'
+            }}
+          >
+            📸 Export Chart
+          </button>
         </div>
       </div>
 
@@ -288,12 +298,12 @@ const CountryExplorer = () => {
         </div>
       )}
 
-      <div className="chart-container" style={{ 
-        flex: 1, 
-        overflow: 'auto', 
-        display: 'flex', 
+      <div className="chart-container" style={{
+        flex: 1,
+        overflow: 'auto',
+        display: 'flex',
         flexDirection: 'column',
-        minHeight: 0 
+        minHeight: 0
       }}>
         <h3 style={{ margin: '0 0 0.5rem 0', color: '#2d3748' }}>Trend Analysis</h3>
         {loading ? (
