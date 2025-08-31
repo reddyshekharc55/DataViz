@@ -95,7 +95,7 @@ function App() {
         </div>
         <div className="title-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 120, maxWidth: 320, flexShrink: 1, marginRight: '2vw' }}>
           <div style={{ color: '#005662', fontWeight: 700, fontSize: '1.05rem', letterSpacing: 0.5, textAlign: 'right', whiteSpace: 'nowrap' }}>
-            <span role="img" aria-label="globe">🌍</span> DataBoard
+            <span role="img" aria-label="globe">🌍</span> DataViz
           </div>
           <div style={{
             color: '#007c91',
